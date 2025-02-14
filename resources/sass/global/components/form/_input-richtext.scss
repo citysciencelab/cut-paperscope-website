@@ -1,0 +1,91 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INPUT RICHTEXT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.ck-editor {
+
+		--ck-focus-ring: var(--inputBorderFocus);
+
+		// editor toolbar
+		.ck-toolbar {
+
+			background: var(--inputBackground);
+			border-radius: var(--inputBorderRadius) !important;
+			border-bottom-left-radius: 0 !important;
+			border-bottom-right-radius: 0 !important;
+		}
+
+		// overwrite text styling in editor
+		.ck-content {
+
+			border-radius: var(--inputBorderRadius) !important;
+			border-top-left-radius: 0 !important;
+			border-top-right-radius: 0 !important;
+
+			table {
+
+				width: 			100%;
+				position: 		relative;
+				margin: 		0 0 20px 0;
+				table-layout: 	fixed;
+				border-collapse: collapse;
+
+				td {
+					padding: 	5px;
+					font: 		var(--fontCopy);
+				}
+			}
+
+			p {
+				margin-bottom: 10px;
+			}
+
+			h3 {
+				margin-top: 20px;
+				margin-bottom: 10px;
+				font: bold 1.2rem/1.8rem var(--fontFamily);
+			}
+
+			ul {
+				padding-left: 15px;
+			}
+		}
+
+		// media embed
+		.ck-media__wrapper { margin:10px 0; }
+	}
+
+
+	//  bring cke popup always on top of vue popups
+	.ck-balloon-panel { z-index: 9999999 !important; }
+
+	// hide powered by label
+	.ck-powered-by-balloon { display: none !important; }
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	RICHTEXT PROVIDER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// SPOTIFY
+	/////////////////////////////////
+
+	figure.media div[data-oembed-url*="spotify"] {
+
+		@extend %relative;
+
+		width: 100%;
+		max-width: 380px;
+		height: 80px;
+		margin-bottom: 2%;
+
+		iframe { border-radius: 10px;}
+	}

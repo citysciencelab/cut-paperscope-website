@@ -1,0 +1,73 @@
+<!--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    HTML
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+
+
+	<template>
+
+		<div ref="root" class="scaled-text">
+			<slot></slot>
+		</div>
+
+	</template>
+
+
+
+<!--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    JAVASCRIPT
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+
+
+	<script setup>
+
+		import { ref, useTemplateRef, onMounted, onBeforeUnmount } from 'vue';
+
+
+		/////////////////////////////////
+		// INIT
+		/////////////////////////////////
+
+		const props = defineProps({
+			font:		{ type: Number, default: 1.0 },			// scaling factor of the font
+			lineHeight: { type: Number, default: 1.1 },			// scaling factor of the line height
+			sizeMin: 	{ type: Number, default: 15 },
+			sizeMax: 	{ type: Number, default: 100 },
+		});
+
+
+		/////////////////////////////////
+		// RESIZE
+		/////////////////////////////////
+
+		const root = useTemplateRef('root');
+
+		function onResize() {
+
+			const w = root.value.offsetWidth;
+			const fs = gsap.utils.clamp(props.sizeMin, props.sizeMax, w * props.font );
+			const lh = fs * props.lineHeight;
+
+			gsap.set(root.value,{fontSize:fs+'px',lineHeight:lh+'px'});
+		}
+
+		onMounted(() => {
+
+			// overwrite css font styling for all children
+			u(root.value).children().attr('style','font-size:inherit;line-height:inherit;');
+
+			window.addEventListener('resize', onResize);
+			onResize();
+		});
+
+		onBeforeUnmount(() => window.removeEventListener('resize', onResize));
+
+		defineExpose({onResize});
+
+
+	</script>
+
+

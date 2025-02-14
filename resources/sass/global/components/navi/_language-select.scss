@@ -1,0 +1,67 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	LANGUAGE SELECT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.language-select {
+
+		@extend %relative;
+
+		width: 			auto;
+		height: 		var(--naviHeight);
+	}
+
+
+	.language-select-content {
+
+		@extend %relative;
+
+		width: 			auto;
+		height: 		var(--naviHeight);
+		overflow: 		hidden;
+		background: 	var(--headerBackground);
+	}
+
+
+	/////////////////////////////////
+	// ITEM
+	/////////////////////////////////
+
+	.header-navi-item.language-select-item {
+
+		@extend %clear-button;
+
+		margin: 		0;
+		height: 		var(--naviHeight);
+		padding-left: 	7px;
+		padding-right: 	7px;
+		font-weight: 	normal;
+	}
+
+
+	.header-navi:not(.dropdown) .language-select-item.active {
+
+		color: 			var(--colorCopy);
+	}
+
+
+	.header-navi-item.language-select-item:focus-visible {
+
+		outline: none;
+		box-shadow: inset 0 0 0 2px var(--colorLinkFocus);
+	}
+
+
+	/////////////////////////////////
+	// DROPDOWN
+	/////////////////////////////////
+
+	.header-navi.dropdown .language-select-content {
+
+		display: 		flex;
+		margin-top: 	20px;
+
+		.language-select-item { margin: 0 3px; }
+	}

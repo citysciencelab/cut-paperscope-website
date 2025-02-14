@@ -1,0 +1,265 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	COLORS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// DEFAULT
+	/////////////////////////////////
+
+	$colorCta: 				#0536B6;
+	$colorCtaHover:			#209EF9;
+
+	$colorActive: 			#E60045;
+	$colorActiveHover: 		#209EF9;
+
+	$colorGray:				#979FA7;
+	$colorGrayHover: 		#818890;
+
+	$colorGrayLight:		#fcfdfe;
+	$colorGrayLightHover: 	#EBEDEE;
+
+	$colorGrayDark:	 		#43484C;
+	$colorGrayDarkHover: 	#363A3E;
+
+	$colorBackground: 		#ffffff;
+
+	$colorError: 			#E60045;
+	$colorFocus: 			#8A24B2;
+
+
+	/////////////////////////////////
+	// BACKEND
+	/////////////////////////////////
+
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	LAYOUT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$layout: (
+
+		// default atomic values for layout
+		"layoutUnit": 				50px,
+		"layoutUnitTablet": 		40px,
+		"layoutUnitMobile": 		20px,
+
+		// basic layout width
+		"maxPageWidth": 			1500px,
+		"maxContentWidth": 			850px,
+
+		// horizontal padding between .page and browser window
+		"pagePadding": 				30px,
+		"pagePaddingTablet": 		5vw,
+		"pagePaddingMobile": 		5vw,
+
+		// horizontal padding between .content and .page
+		"contentPadding": 			0,
+		"contentPaddingTablet":		0,
+		"contentPaddingMobile": 	0,
+	);
+
+	@include set-css-vars( $layout );
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	TYPO
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// COLORS
+	/////////////////////////////////
+
+	$colorH1: 			$colorGrayDarkHover;
+	$colorH2: 			$colorGrayDarkHover;
+	$colorH3: 			$colorGrayDarkHover;
+	$colorH4: 			#000;
+
+	$colorCopy: 		$colorGrayDarkHover;
+
+	$colorLink: 		$colorCta;
+	$colorLinkHover: 	$colorCtaHover;
+	$colorLinkActive: 	$colorActive;
+
+
+	/////////////////////////////////
+	// FONTS
+	/////////////////////////////////
+
+	$fontFamily: 		'OpenSans', sans-serif;
+
+	$fonts: (
+
+		// scale overall typo (inputs and buttons included)
+		'fontRootSize': 		15px,
+		'fontRootSizeTablet': 	14px,
+		'fontRootSizeMobile': 	15px,
+
+		'fontFamily': 		#{$fontFamily},
+
+		'fontH1': 			bold 3.5rem/4rem #{$fontFamily},
+		'fontH2': 			normal 2.5rem/3.0rem #{$fontFamily},
+		'fontH3': 			normal 1.5rem/2rem #{$fontFamily},
+		'fontH4': 			bold 1.1rem/1.5rem #{$fontFamily},
+		'fontCopy': 		normal 1rem/1.6rem #{$fontFamily},
+		'fontCopySmall': 	normal 0.85rem/1.3rem #{$fontFamily},
+
+		'fontH1Mobile': 	bold 2.0rem/2.5rem #{$fontFamily},
+		'fontH2Mobile': 	normal 1.6rem/2.1rem #{$fontFamily},
+		'fontH3Mobile': 	bold 1.3rem/1.6rem #{$fontFamily},
+		'fontH4Mobile': 	bold 1.1rem/1.3rem #{$fontFamily},
+		'fontCopyMobile': 	normal 1rem/1.6rem #{$fontFamily},
+
+		'colorCopy': 		$colorCopy,
+		'colorLink': 		$colorLink,
+		'colorLinkHover': 	$colorLinkHover,
+		'colorLinkActive': 	$colorLinkActive,
+		'colorLinkFocus': 	$colorFocus,
+	);
+
+	@include set-css-vars( $fonts );
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BUTTONS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$buttons: (
+
+		// size
+		'btnHeight': 			40px,
+		'btnHeightTablet': 		38px,
+		'btnHeightMobile': 		38px,
+		'btnPadding': 			0 1.3rem,
+		'btnPaddingMobile': 	0 1rem,
+		'btnMargin': 			0 1rem 1rem 0,
+		'btnVerticalOffset': 	-1px,
+
+		// styling
+		'btnRadius': 			0.6rem,
+		'btnBorderColor': 		transparent,
+		'btnFontSize': 			0.95rem,
+
+		// state normal
+		'btnColor': 			#fff,
+		'btnBackground': 		$colorCta,
+
+		// state hover
+		'btnColorHover':	 	#fff,
+		'btnBackgroundHover': 	$colorCtaHover,
+
+		// state active
+		'btnColorActive':	 	#fff,
+		'btnBackgroundActive': 	$colorActive,
+	);
+
+	@include set-css-vars( $buttons );
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	HEADER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$header: (
+
+		'headerHeight': 		50px,
+		'headerHeightTablet': 	40px,
+		'headerHeightMobile': 	40px,
+
+		'headerBackground': 	#FAFBFC,
+
+		'naviHeight': 			40px,
+		'naviHeightTablet': 	40px,
+		'naviHeightMobile': 	40px,
+	);
+
+	@include set-css-vars( $header );
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CONTENT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$icons: (
+
+		'iconColor': 			$colorGrayDark,
+		'iconColorHover': 		$colorGrayDarkHover,
+		'iconColorActive': 		$colorCta,
+	);
+
+	@include set-css-vars( $icons );
+
+
+	$scroller: (
+		'scrollerWidth': 		6px,
+		'scrollerTrackColor': 	$colorGrayLight,
+		'scrollerColor': 		$colorGray,
+		'scrollerColorHover': 	$colorGrayDark,
+	);
+
+	@include set-css-vars( $scroller );
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	FORM
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$form: (
+
+		// size
+		'inputHeight': 			44px,
+		'inputHeightTablet': 	44px,
+		'inputHeightMobile': 	44px,
+
+		// state normal
+		'inputColor': 			$colorCopy,
+		'inputBackground': 		$colorGrayLight,
+		'inputBorder': 			1px solid #CCCED1,
+		'inputBorderRadius': 	6px,
+
+		// state focus
+		'inputColorFocus': 			$colorCopy,
+		'inputBackgroundFocus': 	#fff,
+		'inputBorderFocus': 		1px solid $colorCopy,
+
+		// stat error
+		'inputColorError': 			$colorError,
+		'inputBackgroundError': 	$colorGrayLight,
+		'inputBorderError': 		1px solid $colorError,
+
+		// select
+		'inputSelectColor': 		$colorCta,
+		'inputSelectColorHover': 	$colorCtaHover,
+
+		// checkbox/radio
+		'iconCheckboxColor': 		$colorCta,
+	);
+
+	@include set-css-vars( $form );

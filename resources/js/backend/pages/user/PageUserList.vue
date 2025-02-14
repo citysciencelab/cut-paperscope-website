@@ -1,0 +1,73 @@
+<!--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    HTML
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+
+
+	<template>
+
+		<section class="content list">
+
+			<h2>{{ t("Benutzer") }}</h2>
+
+			<data-list :options="options" :cols="cols"/>
+			<div class="form-row-buttons" v-if="userIsAdmin">
+				<btn label="Neuer Benutzer" to="backend.user.edit"/>
+			</div>
+
+		</section>
+
+	</template>
+
+
+
+<!--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    JAVASCRIPT
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+
+
+	<script setup>
+
+		import { usePage } from '@global/composables/usePage';
+		import { useUser } from '@global/composables/useUser';
+
+
+		/////////////////////////////////
+		// INIT
+		/////////////////////////////////
+
+		const { t } = usePage("Backend");
+		const { userIsAdmin } = useUser();
+
+
+		/////////////////////////////////
+		// MODEL
+		/////////////////////////////////
+
+		const options = {
+			nameLabel: 'Benutzer',
+			nameProp: 'fullname',
+			imageProp: 'image',
+			routes: {
+				load: 'api.backend.user.list',
+				search: 'api.backend.user.search',
+				content: 'backend.user.edit',
+				edit: 'backend.user.edit',
+			},
+		};
+
+		const cols = [
+			{label: 'E-Mail', property: 'email', type: "string"},
+			{label: 'Benutzername', property: 'username', type: "string"},
+			{label: 'Rolle', property: 'role', type: "string"},
+			{label: 'Geprüft', property: 'approved', type: "boolean"},
+			{label: 'Blockiert', property: 'blocked', type: "boolean"},
+		];
+
+
+	</script>
+
+

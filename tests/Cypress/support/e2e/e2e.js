@@ -1,0 +1,118 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	let fs = require('fs');
+
+	import "cypress-mailslurp";
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	AUTH
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	Cypress.Commands.add('appLogin', (username, password) => {
+
+		if(!username) { username = Cypress.env('ROOT_EMAIL'); }
+		if(!password) { password = Cypress.env('ROOT_PASSWORD'); }
+
+		cy.visit('/login');
+		cy.wait(1000);
+
+		cy.get('#input-email').type(username);
+		cy.get('#input-password').type(password);
+		cy.get('.btn-login').click();
+		cy.wait(2000);
+	});
+
+
+	Cypress.Commands.add('backendLogin', (username, password) => {
+
+		if(!username) { username = Cypress.env('ROOT_EMAIL'); }
+		if(!password) { password = Cypress.env('ROOT_PASSWORD'); }
+
+		cy.visit('/backend');
+		cy.wait(2000);
+
+		cy.get('#input-email').type(username);
+		cy.get('#input-password').type(password);
+		cy.get('.btn-login').click();
+		cy.wait(4000);
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	ASSERTIONS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	Cypress.Commands.add('assertRedirect', path => {
+
+		cy.location('pathname').should('eq', `/${path}`.replace(/^\/\//, '/'));
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	LARAVEL
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	Cypress.Commands.add('csrfToken', () => {
+
+		return cy.request({
+			method: 'GET',
+			url: '/__cypress__/csrf_token',
+			log: false,
+		})
+		.its('body', { log: false });
+	});
+
+
+	Cypress.Commands.add('artisan', (command, parameters = {}, options = {}) => {
+
+		options = Object.assign({}, { log: true }, options);
+
+		if (options.log) {
+			Cypress.log({
+				name: 'artisan',
+				message: command,
+				consoleProps: () => ({ command, parameters }),
+			});
+		}
+
+		return cy.csrfToken().then((token) => {
+			return cy.request({
+				method: 'POST',
+				url: '/__cypress__/artisan',
+				body: { command: command, parameters: parameters, _token: token },
+				log: false,
+			});
+		});
+	});
+
+
+	Cypress.Commands.add('refreshDatabase', (options = {}) => {
+
+		return cy.artisan('migrate:fresh --seed', options);
+	});
+
+
+	Cypress.Commands.add('seed', (seederClass) => {
+
+		return cy.artisan('db:seed', {'--class': seederClass});
+	});
+
+

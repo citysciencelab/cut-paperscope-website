@@ -1,0 +1,125 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace Database\Factories;
+
+	// Laravel
+	use Illuminate\Database\Eloquent\Factories\Factory;
+	use Cocur\Slugify\Slugify;
+
+	// Models
+	use App\Models\App\Base\Item;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CLASS CONSTRUCT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+abstract class BaseFactory extends Factory
+{
+
+	abstract public function definition(): array;
+
+
+	/**
+	 * The class string (Item::class) of the factory's corresponding model.
+	 */
+	protected $model = Item::class;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	STATES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/**
+	 * Force model to be accessible for public getters in controllers
+	 *
+	 * @return Factory
+	 */
+
+	public function public(): Factory {
+
+		return $this->state(fn(array $attributes) => $this->model::$usePublished ?
+			[
+				'public' => true,
+				'published_start' => $this->faker->dateTimeBetween('-5 months', '-1 months'),
+			]
+			: ['public' => true]
+		);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BASE PROPS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/**
+	 * Create faker data for the default properties of a model. Method detects features like multi language and slug automatically
+	 *
+	 * @param array $additionalProps Additional properties to be added to the base properties: 'page' or 'sharing'
+	 * @return array Base properties for the model
+	 */
+
+	protected function getBaseProps(array $additionalProps = []): array {
+
+		$props = [
+			'name' => 		$this->faker->realText(20),
+			'public' => 	$this->faker->boolean(75),
+			'order' => 		0,
+		];
+
+		if($this->model::$useSlug) {
+			$props['slug'] = (new Slugify())->slugify($props['name'] . '_' . $this->faker->numberBetween(0,99999));
+		}
+
+		if($this->model::$usePublished) {
+			$props['published_start'] = $this->faker->dateTimeBetween('-3 months', '+3 months');
+		}
+
+		if(in_array('page',$additionalProps) || in_array('sharing',$additionalProps)) {
+
+			if(config('app.features.multi_lang')) {
+				$props = array_merge($props,[
+					'meta_title_de' =>		 	$this->faker->word() . ' (de)',
+					'meta_description_de' =>	$this->faker->text(155) . '(de)',
+					'social_description_de' =>	$this->faker->text(195) . '(de)',
+				]);
+			}
+			else {
+				$props = array_merge($props,[
+					'meta_title' =>		 	$this->faker->word(),
+					'meta_description' =>	$this->faker->text(160),
+					'social_description' =>	$this->faker->text(200),
+				]);
+			}
+		}
+
+		return $props;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+}	// end class
+
+
+

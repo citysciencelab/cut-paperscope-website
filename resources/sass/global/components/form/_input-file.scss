@@ -1,0 +1,92 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INPUT FILE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.input-file {
+
+		@extend %relative-flex;
+
+		align-items: center;
+		margin-bottom: 0.75rem;
+	}
+
+
+	/////////////////////////////////
+	// PREVIEW IMAGE
+	/////////////////////////////////
+
+	.input-file-image {
+
+		@extend %relative;
+
+		width: 			52px;
+		min-width: 		52px;
+		height: 		var(--inputHeight);
+		margin-right: 	10px;
+		cursor: 		pointer;
+
+		background: 	var(--inputBackground);
+		border: 		var(--inputBorder);
+		border-radius: 	var(--inputBorderRadius);
+
+		background-position: center center;
+		background-size: cover;
+
+		.svg-icon { fill: #979FA7; }
+	}
+
+
+	/////////////////////////////////
+	// PREVIEW LABEL
+	/////////////////////////////////
+
+	.input-file-label {
+
+		width: 			auto;
+		margin: 		0;
+		white-space: 	nowrap;
+		overflow: 		hidden;
+		text-overflow: 	ellipsis;
+		padding-right: 	4px;			// add space to prevent italic text from being cut off
+	}
+
+
+	/////////////////////////////////
+	// EMPTY
+	/////////////////////////////////
+
+	.input-file.empty {
+
+		.input-file-image { cursor: default; }
+
+		p { opacity: 0.5; font-style: italic; }
+	}
+
+
+	/////////////////////////////////
+	// DELETE
+	/////////////////////////////////
+
+	.input-file-delete {
+
+		@extend %relative;
+
+		width: 			30px;
+		min-width: 		30px;
+		height: 		30px;
+		margin-left: 	5px;
+		cursor: 		pointer;
+	}
+
+	@include hover() {
+
+		.input-file-delete:hover {
+
+			.svg-icon {
+				fill: var(--btnBackgroundHover);
+			}
+		}
+	}

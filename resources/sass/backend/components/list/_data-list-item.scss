@@ -1,0 +1,174 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DATA LIST
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.data-list-item {
+
+		background-color: 	$colorGrayLight;
+		transition: 		background-color .3s ease-in-out;
+
+		td {
+			position: 			relative;
+			white-space: 		nowrap;
+			overflow-x: 		hidden;
+			text-overflow: 		ellipsis;
+			vertical-align: 	middle;
+			padding: 			5px 10px;
+		}
+	}
+
+
+	@include hover() {
+
+		.data-list-item:not(.exclude, .loading, .empty):hover {
+
+			background-color: 	rgb(247, 249, 252);
+		}
+	}
+
+
+	/////////////////////////////////
+	// LOADING
+	/////////////////////////////////
+
+	.data-list-item.loading {
+
+		background-color: 	transparent;
+		text-align: 		center;
+
+		svg {
+			margin: 		0 auto;
+			position: 		relative;
+			width: 			70px;
+			height: 		30px; 					// same height as .data-list-btn
+			transform: 		translateY(5px);		// visual align with table
+		}
+	}
+
+
+	/////////////////////////////////
+	// EMPTY
+	/////////////////////////////////
+
+	.data-list-item.empty {
+
+		background-color: 	transparent;
+		text-align: 		center;
+
+		td {
+			font-style: 	italic;
+			opacity: 		0.5;
+		}
+	}
+
+
+	/////////////////////////////////
+	// HIDDEN
+	/////////////////////////////////
+
+	.data-list-item.hidden,
+	.data-list-item.expired-start,
+	.data-list-item.expired-end {
+
+		td:first-child  {
+
+			color: $colorError;
+			* { color: $colorError; }
+
+			.svg-icon {
+				position: 		relative;
+				display: 		inline-block;
+				width: 			12px;
+				height: 		12px;
+				vertical-align: middle;
+				fill: 			$colorError;
+				margin-left: 	3px;
+				transform: 		translateY(-1px);
+			}
+		}
+	}
+
+	.data-list-item.expired-start .published-start { color: $colorError; }
+	.data-list-item.expired-end .published-end { color: $colorError; }
+
+
+	/////////////////////////////////
+	// EXCLUDE
+	/////////////////////////////////
+
+	.data-list-item.exclude {
+
+		opacity: 0.35;
+		cursor: default !important;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	COLS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// COL NAME
+	/////////////////////////////////
+
+	.data-list-item td:first-child {
+
+		a {
+			@extend %relative;
+
+			color: $colorCopy;
+		}
+
+		.data-list-item-image {
+
+			@extend %relative-inline-block;
+
+			width: 			20px;
+			height: 		20px;
+			overflow: 		hidden;
+			margin-right: 	3px;
+			transform: 		translateY(4px);
+
+			border-radius: 	50%;
+			vertical-align:	baseline;
+
+			object-fit: 		cover;
+			object-position:	center center;
+		}
+	}
+
+
+	/////////////////////////////////
+	// COL TYPES
+	/////////////////////////////////
+
+	.data-list-item-icon {
+
+		@extend %center-absolute;
+
+		height: 20px;
+		width: 20px;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SORT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.data-list-item.sortable-ghost {
+
+		opacity: 0.2;
+	}
+
+

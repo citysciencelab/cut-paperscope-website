@@ -1,0 +1,117 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace App\Http\Controllers\Auth;
+
+	// Laravel
+	use App\Http\Controllers\Controller;
+	use Illuminate\Support\Facades\Hash;
+	use Illuminate\Support\Facades\Auth;
+	use Illuminate\Http\JsonResponse;
+
+	// App
+	use App\Http\Requests\Auth\TokenRequest;
+	use App\Http\Requests\Auth\TokenDeleteRequest;
+	use App\Http\Resources\Auth\UserResource;
+	use App\Models\Auth\User;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CLASS CONSTRUCT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+class TokenController extends Controller {
+
+
+	// model classes
+	protected $modelClass = User::class;
+	protected $modelResourceClass = UserResource::class;
+	protected $modelListResourceClass = UserResource::class;
+
+	// model relations
+	protected $modelRelations = [];
+	protected $modelListRelations = [];
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CREATE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function createToken(TokenRequest $request): JsonResponse {
+
+		$validated = $request->validated();
+
+		// get user
+		$user = User::with('tokens')->where('email', $validated->email)->first();
+
+		// find by mail or username
+		$user = User::with('tokens')->where('email', $validated->email)->first();
+		if(!$user) { $user = User::where('username', $validated->email)->first(); }
+
+		if(!$user) { return $this->responseError(403,'auth.failed'); };
+
+		// check password
+		if(!Hash::check($validated->password, $user->password)) { return $this->responseError(403,'auth.failed'); }
+
+		// create new token
+		$token = $user->tokens()->where('name', $validated->device_name)->delete();
+		$token = $user->createToken($validated->device_name)->plainTextToken;
+
+		Auth::login($user);
+
+		// response data
+		$data = [
+			'user' => new UserResource($user),
+			'token' => $token
+		];
+
+		return $this->responseData($data);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DELETE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function deleteToken(TokenDeleteRequest $request): JsonResponse {
+
+		$validated = $request->validated();
+
+		// get user
+		$user = User::with('tokens')->where('id', $validated->id)->first();
+		if(!$user) { return $this->responseError(); }
+
+		// request to database token
+		$token = explode('|',$validated->token);
+		$token = count($token)>1 ? $token[1] : $token[0];
+		$token = hash('sha256', $token);
+
+		// delete token
+		$userToken = $user->tokens()->where('token', $token)->first();
+		if($userToken) { $userToken->delete(); }
+
+		return $this->responseSuccess();
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+} // end class

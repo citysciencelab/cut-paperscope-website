@@ -1,0 +1,69 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BACKEND NAVI
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$width: 170px;
+
+	.backend-navi {
+
+		@extend %fixed;
+
+		width: 			$width;
+		background: 	#F8FAFC;
+		top: 			var(--headerHeight);
+		padding: 		15px 7px 10px 10px;
+		height: 		calc( $vh100 - var(--headerHeight) );
+		z-index: 		9999; 												// 1 below header
+		box-shadow: 	inset 5px 0 10px #0000000d;
+		border-right: 	1px solid rgb(240, 245, 245);
+
+
+		--scrollerWidth: 		4px;
+		--scrollerTrackColor: 	#fff;
+		--scrollerColor: 		#c7c7c7;
+	}
+
+
+	.backend-navi + main {
+
+		padding-left: calc(170px + var(--pagePadding));
+	}
+
+
+	/////////////////////////////////
+	// NAVI ITEM
+	/////////////////////////////////
+
+	.backend-navi .header-navi-item {
+
+		font: 		bold 14px/14px var(--fontFamily);
+		padding: 	7px 0;
+		margin: 	2px 0;
+		height: 	auto;
+
+		&:first-child { margin-top: 5px; }
+	}
+
+	.header-navi-item.secondary {
+
+		font-weight: normal;
+	}
+
+
+	/////////////////////////////////
+	// SEPARATOR
+	/////////////////////////////////
+
+	.backend-navi-separator {
+
+		margin: 		10px 0;
+		width: 			96%;
+		left: 			2%;
+		border: 		0;
+  		border-top: 	1px solid #e3e5e5;
+	}
+
+

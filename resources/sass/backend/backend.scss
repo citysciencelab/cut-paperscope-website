@@ -1,0 +1,64 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	@import '../global/global';
+	@import 'backend-config';
+	@import 'backend-layout';
+	@import 'backend-typo';
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BACKEND
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// COMPONENTS
+	/////////////////////////////////
+
+	// header
+	@import 'components/header/header-component';
+	@import 'components/header/header-navi';
+	@import 'components/header/header-navi-item';
+
+	// navi
+	@import 'components/navi/backend-navi';
+
+	// dashboard
+	@import 'components/dashboard/dashboard';
+	@import 'components/dashboard/dashboard-analytics';
+
+	// list
+	@import 'components/list/data-list';
+	@import 'components/list/data-list-item';
+	@import 'components/list/data-list-buttons';
+	@import 'components/list/data-list-navi';
+	@import 'components/list/data-list-paginator';
+
+	// file manager
+	@import 'components/file-manager/file-manager';
+	@import 'components/file-manager/file-manager-navi';
+	@import 'components/file-manager/file-manager-breadcrumb';
+	@import 'components/file-manager/file-list-item';
+	@import 'components/file-manager/file-list-buttons';
+	@import 'components/file-manager/file-list-preview';
+
+	// model
+	@import 'components/model/model-edit';
+	@import 'components/model/model-accordion';
+
+
+	/////////////////////////////////
+	// PAGES
+	/////////////////////////////////
+
+	@import 'pages/page-auth';
+	@import 'pages/page-user';
+	@import 'pages/page-tutorial';

@@ -1,0 +1,368 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BUTTON
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.btn {
+
+		@extend %relative-inline-block;
+		@extend %no-select;
+
+		width: 				auto;
+		height: 			var(--btnHeight);
+		margin: 			var(--btnMargin);
+		padding: 			var(--btnPadding);
+		transition: 		all 0.2s;
+
+		// color
+		background: 		var(--btnBackground);
+		color: 				var(--btnColor);
+
+		// border
+		border-radius: 		var(--btnRadius);
+		border: 			0;
+		box-shadow: 		inset 0 0 0px 1px var(--btnBorderColor);
+
+		// typo
+		font-size: 			var(--btnFontSize);
+		line-height: 		calc(var(--btnHeight) + var(--btnVerticalOffset)); 		// for vertical center. center the label visually
+		text-align: 		center;
+		text-decoration: 	none;
+		font-family: 		var(--fontFamily);
+		font-weight: 		bold;
+
+		// disable html button style
+		appearance: 		none;
+		outline: 			0;
+		cursor: 			pointer;
+
+		.svg-icon { fill: var(--btnColor); }
+	}
+
+
+	button.btn,
+	button.btn.icon,
+	button.btn.icon-label {
+
+		padding-bottom: calc(var(--btnVerticalOffset) * -1); 		// for same vertical center as router-link and a
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	@include hover() {
+
+		.btn:not(.disabled):hover {
+
+			background: var(--btnBackgroundHover);
+			color: 		var(--btnColorHover);
+
+			.svg-icon { fill: var(--btnColorHover); }
+		}
+	}
+
+
+	.btn:not(.disabled):focus-visible {
+
+		background: var(--btnBackgroundHover);
+		color: 		var(--btnColorHover);
+
+		outline: 2px solid var(--colorLinkFocus);
+		outline-offset: 3px;
+
+		.svg-icon { fill: var(--btnColorHover); }
+	}
+
+
+	/////////////////////////////////
+	// ACTIVE
+	/////////////////////////////////
+
+	.btn.active {
+
+		background: var(--btnBackgroundActive);
+		color: 		var(--btnColorActive);
+	}
+
+
+	/////////////////////////////////
+	// BLOCKING
+	/////////////////////////////////
+
+	.btn .loading-icon {
+
+		@extend %absolute;
+
+		height: 	60%;
+		top: 		20%;
+		display: 	none;
+	}
+
+
+	.btn.blocking {
+
+		background: 	var(--btnBackground) !important;
+		cursor: 		default;
+
+		span { opacity: 0; }
+		.loading-icon { display: block; }
+		.svg-icon { display: none; }
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SECONDARY
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.btn.secondary {
+
+		--btnBorderColor: var(--btnBackground);
+
+		// color
+		background: 	var(--btnColor);
+		color: 			var(--btnBackground);
+
+		.svg-icon { fill: var(--btnBackground); }
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	@include hover() {
+
+		.btn.secondary:not(.disabled):hover {
+
+			--btnBorderColor: var(--btnBackgroundHover);
+
+			background: var(--btnColorHover);
+			color: 		var(--btnBackgroundHover);
+
+			.svg-icon { fill: var(--btnBackgroundHover); }
+		}
+	}
+
+
+	.btn.secondary:not(.disabled):focus-visible {
+
+		--btnBorderColor: var(--btnBackgroundHover);
+
+		background: var(--btnColorHover);
+		color: 		var(--btnBackgroundHover);
+
+		.svg-icon { fill: var(--btnBackgroundHover); }
+	}
+
+
+	/////////////////////////////////
+	// ACTIVE
+	/////////////////////////////////
+
+	.btn.secondary.active {
+
+		--btnBorderColor: var(--btnBackgroundActive);
+
+		background: var(--btnColorActive);
+		color: 		var(--btnBackgroundActive);
+
+		.svg-icon { fill: var(--btnBackgroundActive); }
+	}
+
+
+	/////////////////////////////////
+	// BLOCKING
+	/////////////////////////////////
+
+	.btn.secondary.blocking {
+
+		--btnBorderColor: var(--btnBackground) !important;
+
+		background: 	var(--btnColor) !important;
+		color: 			var(--btnBackground) !important;
+
+		.svg-inline path { stroke: var(--btnBackground) !important; }
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CTA
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.btn.cta {
+
+		background: 	var(--btnBackgroundHover);
+		color: 			var(--btnColorHover);
+
+		.svg-icon { fill: var(--btnColorHover); }
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	@include hover() {
+
+		.btn.cta:not(.disabled):hover {
+
+			background: var(--btnBackground);
+			color: 		var(--btnColor);
+
+			.svg-icon { fill: var(--btnColor); }
+		}
+	}
+
+	.btn.cta:not(.disabled):focus-visible {
+
+		background: var(--btnBackground);
+		color: 		var(--btnColor);
+
+		.svg-icon { fill: var(--btnColor); }
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	ICON
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.btn.icon {
+
+		padding: 	0;
+		min-width: 	var(--btnHeight);
+		height: 	var(--btnHeight);
+
+		.svg-icon {
+
+			width: 		calc(var(--btnHeight) * 0.7);
+			left: 		calc(var(--btnHeight) * 0.15);
+			height: 	80%;
+			top: 		10%;
+		}
+	}
+
+
+	.btn.icon-label {
+
+		padding: var(--btnPadding);
+		padding-left: calc(var(--btnHeight) * 1.1);
+
+		.svg-icon {
+			width: 	calc(var(--btnHeight) * 0.7);
+			left: 	calc(var(--btnHeight) * 0.15);
+			left: 	calc(var(--btnHeight) * 0.25) !important;
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SMALL
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.btn.small {
+
+		height: 		calc(var(--btnHeight) * 0.75);
+		line-height: 	calc((var(--btnHeight) + var(--btnVerticalOffset)) * 0.75);
+		font-size: 		calc(var(--btnFontSize) * 0.9);
+		border-radius: 	calc(var(--btnRadius) * 0.75);
+	}
+
+
+	/////////////////////////////////
+	// ICON
+	/////////////////////////////////
+
+	.btn.small.icon {
+
+		min-width: 	calc(var(--btnHeight) * 0.75);
+		height: 	calc(var(--btnHeight) * 0.75);
+
+		.svg-icon {
+
+			width: 	calc(var(--btnHeight) * 0.6);
+			left: 	calc(var(--btnHeight) * 0.075);
+		}
+	}
+
+	.btn.small.icon-label {
+
+		padding-left: calc(var(--btnHeight) * 0.95);
+
+		.svg-icon {
+
+			width: 	calc(var(--btnHeight) * 0.6);
+			left: 	calc(var(--btnHeight) * 0.075);
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DISABLED
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.btn.disabled {
+
+		cursor: 	not-allowed;
+		opacity: 	0.35;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SSO
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// APPLE
+	/////////////////////////////////
+
+	.btn.sso-apple {
+
+		--btnBorderColor: #000;
+
+		background: 	#000;
+		color: 			#fff;
+
+		.svg-icon { fill: #fff; }
+	}
+
+
+	@include hover() {
+
+		.btn.sso-apple:not(.disabled):hover {
+
+			--btnBorderColor: #000;
+
+			background: #fff;
+			color: 		#000;
+
+			.svg-icon { fill: #000; }
+		}
+	}

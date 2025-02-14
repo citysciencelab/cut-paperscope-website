@@ -1,0 +1,119 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	PROJECT ITEM
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.project-list-item {
+
+		@extend %relative-flex;
+
+		height: 		var(--btnHeight);
+		padding: 		0px 26px;
+		border-radius: 	24px;
+		align-items: 	center;
+		justify-content: space-between;
+		margin-bottom: 	2%;
+		box-shadow: 	0px 0px 15px rgba(0,0,0,0.07);
+
+		p {
+			margin: 0 10px 0 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.btn {margin: 0 0 0 10px; }
+	}
+
+
+	/////////////////////////////////
+	// HEADER
+	/////////////////////////////////
+
+	.project-list-item.header {
+
+		margin: 4px 0 2px 0;
+		box-shadow: none;
+		p { font-weight: bold; }
+	}
+
+
+	/////////////////////////////////
+	// TYPO
+	/////////////////////////////////
+
+	.project-list-item-title {
+
+		width: 30%;
+		min-width: 120px;
+		flex-grow: 2;
+		margin-right: 10px;
+		flex-shrink: 0;
+
+		p { margin: 0; }
+	}
+
+	@include hover() {
+
+		.project-list-item-title:hover {
+
+			p { color: $colorPsBlue; }
+		}
+	}
+
+	.project-list-item-slug {
+
+		width: 20%;
+		text-transform: uppercase;
+		min-width: 110px;
+		flex-grow: 1;
+	}
+
+	.project-list-item-date {
+
+		width: 120px;
+		flex-shrink: 0;
+	}
+
+
+	/////////////////////////////////
+	// BUTTONS
+	/////////////////////////////////
+
+	.project-list-item-buttons {
+
+		@extend %relative;
+
+		width: 130px;
+		text-align: right;
+		white-space: nowrap;
+	}
+
+	.project-list-item-buttons .btn.icon {
+
+		width: 38px;
+		height: 38px;
+		min-width: 38px;
+		padding: 0;
+		margin: 0;
+		background: #fff !important;
+
+		.svg-icon {
+			width: 70%;
+			height: 70%;
+			top: 15%;
+			left: 15%;
+			fill: #000;
+		}
+	}
+
+
+	@include hover() {
+
+		.project-list-item .btn.icon:hover {
+
+			.svg-icon { fill: $colorPsBlue; }
+		}
+	}

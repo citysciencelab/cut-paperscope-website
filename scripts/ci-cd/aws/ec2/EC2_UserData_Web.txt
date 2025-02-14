@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# UPDATE SYSTEM
+sudo su
+yum update -y
+yum install -y ec2-instance-connect
+yum install -y amazon-linux-extras
+yum install -y ruby
+
+# INSTALL PHP
+amazon-linux-extras enable php7.4
+yum clean metadata
+yum install -y php php-{pear,cgi,common,curl,mbstring,gd,mysqlnd,gettext,bcmath,json,xml,fpm,intl,zip,imap}
+
+# INSTALL COMPOSER
+cd ~
+curl -sS https://getcomposer.org/installer | sudo php
+mv composer.phar /usr/local/bin/composer
+ln -s /usr/local/bin/composer /usr/bin/composer
+
+# INSTALL NODE/NPM
+cd ~
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+. ~/.nvm/nvm.sh
+nvm install node
+
+# INSTALL APACHE WEB SERVER
+yum install -y httpd.x86_64
+systemctl start httpd.service
+systemctl enable httpd.service
+echo "This is $(hostname -f)" > /var/www/html/index.html
+chown -R apache:apache /var/www/
+
+# INSTALL CODEDEPLOY AGENT
+yum install -y wget
+wget https://aws-codedeploy-eu-central-1.s3.eu-central-1.amazonaws.com/latest/install
+chmod +x ./install
+./install auto
+service codedeploy-agent status
+

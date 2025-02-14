@@ -1,0 +1,50 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	PREVIEW MODE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.preview-mode {
+
+		@extend %fixed;
+		@extend %no-select;
+		@include box-shadow('default');
+
+		width: 			auto;
+		top: 			auto;
+		left: 			20px;
+		bottom: 		20px;
+		margin: 		0;
+		padding: 		5px 15px;
+		background: 	#FFE4E4;
+		color: 			#932147;
+		border: 		2px solid #FFBEBE;
+		font-weight: 	bold;
+		border-radius: 	10px;
+	}
+
+
+	/////////////////////////////////
+	// FRAGMENT
+	/////////////////////////////////
+
+	.fragment.preview {
+
+		@extend %devbox;
+
+		--color: rgba(255, 190, 190, 0.5);
+		border-radius: 5px;
+
+		&::after {
+			content: 	"preview";
+			left: 		auto;
+			right: 		0;
+			color: 		#932147;
+			font-weight: normal;
+			border-top-right-radius: 5px;
+			border-bottom-left-radius: 5px;
+		}
+	}
+
+

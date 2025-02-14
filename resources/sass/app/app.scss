@@ -1,0 +1,85 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	@import '../global/global';
+	@import 'app-config';
+	@import 'app-layout';
+	@import 'app-typo';
+	// @import '../global/utility/develop';
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	APP
+//
+///////////////////////////////////////////////////////////////////////////////////////s/////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// COMPONENTS
+	/////////////////////////////////
+
+	// content
+	@import 'components/content/app-btn';
+	@import 'components/content/content-filter';
+	@import 'components/content/filter-slider';
+	@import 'components/content/paginator-scroller';
+
+	// header
+	@import 'components/header/header-component';
+	@import 'components/header/header-navi';
+	@import 'components/header/header-navi-item';
+
+	// form
+	@import 'components/form/app-form';
+
+	// footer
+	@import 'components/footer/footer-component';
+	@import 'components/footer/footer-navi';
+	@import 'components/footer/footer-navi-item';
+
+	// fragment
+	@import 'components/fragment/fragments';
+	@import 'components/fragment/fragment-text-image';
+	@import 'components/fragment/fragment-slider-image';
+	@import 'components/fragment/fragment-separator';
+	@import 'components/fragment/fragment-accordion';
+
+	// social
+	@import 'components/social/social-share';
+	@import 'components/social/social-share-item';
+
+	// popup
+	@import 'components/popup/cookie-consent';
+	@import 'components/popup/preview-mode';
+
+	// user
+	@import 'components/user/input-userupload';
+
+	// project
+	@import 'components/project/project-list-item';
+	@import 'components/project/project-navi';
+	@import 'components/project/project-info';
+	@import 'components/project/project-paper';
+	@import 'components/project/project-objects';
+	@import 'components/project/project-mapping';
+
+	// visualizer
+	@import 'components/visualizer/visualizer';
+
+	// beamer
+	@import 'components/beamer/beamer';
+
+
+	/////////////////////////////////
+	// PAGES
+	/////////////////////////////////
+
+	@import 'pages/page-auth';
+	@import 'pages/page-project';
+	@import 'pages/page-visualizer';

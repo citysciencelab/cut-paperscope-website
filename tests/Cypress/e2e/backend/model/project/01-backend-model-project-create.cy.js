@@ -1,0 +1,56 @@
+/// <reference types="cypress" />
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	TESTS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+describe('Create Project model in backend', () => {
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CREATE PROJECT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	it('create with correct data', () => {
+
+		const random = Math.random().toString(36).substring(7);
+
+		// arrange: got to edit project
+		cy.backendLogin();
+		cy.visit('/backend/project/edit');
+		cy.wait(2000);
+
+		// act
+		cy.get('#input-name').type('Cypress Test-Project ' + random);
+		cy.get('#input-published-start').click();
+		cy.wait(1000); // popup opening
+		cy.get('.date-calendar-day.today').first().click();
+		cy.get('.date-selector-confirm').click();
+		cy.wait(1000); // popup closing
+		cy.get('#input-public-0').check({force:true});
+		// project properties
+		cy.get('#input-title').type("Sint omnis quis quia libero libero.");
+		cy.get('#input-shortid').type("ABCD-EFGH");
+		cy.get('.row-description .ck-editor__editable').then(el => {
+			const editor = el[0].ckeditorInstance;
+			editor.setData('Dolorem labore.');
+		});
+		cy.get('.btn-model-confirm').click();
+
+		// assert: project in list
+		cy.url().should('include', '/backend/project');
+		cy.get('.data-list-item[data-draggable] a').filter(':contains("Cypress Test-Project ' + random + '")').should('exist');
+	});
+
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+})

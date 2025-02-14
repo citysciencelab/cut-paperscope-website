@@ -1,0 +1,67 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace PHP_CodeSniffer\Standards\HelloNasty\Sniffs\Comments;
+
+
+	use PHP_CodeSniffer\Sniffs\Sniff;
+	use PHP_CodeSniffer\Files\File;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CLASS DECLARATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+class CommentSectionTrailingSpaceSniff implements Sniff
+{
+
+	public function register() {
+
+		return array(T_COMMENT);
+	}
+
+
+	public function process(File $file, $stackPtr) {
+
+		$tokens = $file->getTokens();
+		$token = $tokens[$stackPtr];
+
+		// skip if not a comment section
+		if(!str_starts_with($token['content'],'/*'.str_repeat('/',50))) { return; }
+
+		// comment sections ends with T_WHITESPACE on the same line
+		$nextPtr = $file->findNext(T_COMMENT, $stackPtr, null, true);
+		$nextToken = $tokens[$nextPtr];
+		if($nextToken['line'] - $token['line'] != 4) { return; }
+
+		// find next token after comment section
+		$nextPtr = $file->findNext(T_WHITESPACE, $nextPtr, null, true);
+		$nextToken = $tokens[$nextPtr];
+
+		// 2 blank lines after comment section (5 lines)
+		if($nextToken['line'] - $token['line'] != 7) {
+
+			// ignore end of file
+			if($nextToken['type'] == 'T_CLOSE_CURLY_BRACKET' && $nextToken['level'] == 0) { return; }
+
+			$file->addError('Comment section must be followed by 2 blank lines', $stackPtr, 'CommentSection_TrailingSpace');
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+}	// end class
+
+

@@ -1,0 +1,117 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	ACCORDION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.accordion {
+
+		@extend %relative;
+
+		margin-bottom: 10px;
+	}
+
+
+	/////////////////////////////////
+	// HEADER
+	/////////////////////////////////
+
+	.accordion-header {
+
+		@extend %relative;
+		@extend %no-select;
+
+		cursor: 	pointer;
+		padding: 	8px 0;
+
+		border-bottom: 	1px solid #f3f3f3;
+		transition: 	border-bottom-color 0.5s ease-in-out;
+
+		h4 { margin: 0; padding-right: 35px; }
+		& > *:last-child { margin-bottom: 0 !important; }
+	}
+
+
+	.accordion-header-icon {
+
+		@extend %absolute;
+		@extend %clear-button;
+
+		width: 		25px;
+		height: 	25px;
+		left: 		auto;
+		top: 		-2px;
+		right: 		5px;
+		z-index: 	2;
+	}
+
+
+	@include hover() {
+
+		.accordion-header:hover {
+
+			h4 { color: var(--colorLinkHover); }
+			.svg-icon { fill: var(--colorLinkHover); }
+		}
+	}
+
+
+	.accordion-header-icon:focus-visible {
+
+		outline: 2px solid var(--colorLinkFocus);
+	}
+
+
+	/////////////////////////////////
+	// CONTENT
+	/////////////////////////////////
+
+	.accordion-content {
+
+		@extend %relative;
+
+		height: 	0;
+		overflow: 	hidden;
+		padding: 	0 3%;
+
+		// spacing between header and content
+		& > *:first-child { padding-top: 1%; }
+		& > *:last-child { padding-bottom: 3%; }
+	}
+
+
+	/////////////////////////////////
+	// OPEN
+	/////////////////////////////////
+
+	.accordion.open .accordion-header { border-bottom-color: transparent; }
+	.accordion.open .accordion-header-icon { transform: rotate(180deg); }
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MOBILE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	@include breakpoint('mobile') {
+
+		.accordion-header {
+
+			h4 {
+				font: var(--fontCopy);
+				font-weight: bold;
+			}
+		}
+
+
+		.accordion-header-icon {
+
+			width: 	20px;
+			height: 20px;
+			top: 	8px;
+		}
+	}

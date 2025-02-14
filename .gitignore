@@ -1,0 +1,62 @@
+# Project
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/public/cesium
+/storage/*.key
+/storage/debugbar
+/vendor
+scripts/laravel/node_modules
+
+# Dotenv
+.env
+.env.backup
+.env.cypress
+.env.testing
+
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# Testing
+/tests/_database/TestingDatabase.sqlite_test_*
+/tests/_database/TestingDatabase.sqlite-journal
+/tests/Vitest/CodeCoverage/*
+/tests/Vitest/Results/*
+/tests/PHPUnit/CodeCoverage/*
+/tests/PHPUnit/.phpunit.result.cache
+/tests/PHPUnit/Results/*
+/tests/Backstop/bitmaps_test/*
+/tests/Backstop/html_report/*
+.scannerwork
+
+# Editor
+/.fleet
+/.idea
+/.vscode
+_ide_helper.php
+_ide_helper_models.php
+
+# OS
+**/.DS_Store
+.rnd
+
+# Cypress.io
+/cypress/videos
+/cypress/screenshots
+
+# Mellisearch
+data.ms/*
+
+# AWS CodeCommit
+#/public/css/*
+#/public/js/*
+#/public/manifest.js
+#/public/mix-manifest.json
+#/public/svg/app/sprite.svg
+#/public/svg/app/sprite-icons.svg
+#/public/svg/app/sprite.svg
+#/public/svg/backend/sprite-icons.svg
+#/public/svg/backend/sprite.svg

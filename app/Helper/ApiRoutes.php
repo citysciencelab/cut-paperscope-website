@@ -1,0 +1,81 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace App\Helper;
+
+	// Laravel
+	use Illuminate\Support\Facades\Route;
+	use Illuminate\Support\Str;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CLASS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+class ApiRoutes {
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	FRONTEND
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public static function setModelAppRoutes(string $name, bool $useId=false, string $controller=null): void {
+
+		$name = Str::lower($name);
+		$controller = Str::studly(empty($controller) ? $name : $controller);
+
+		Route::get('/'.$name, ['App\\Http\\Controllers\\App\\'.$controller.'Controller','getPublicList'])->name('api.'.$name.'.list');
+
+		if($useId) {
+			Route::get('/'.$name.'/{id}', ['App\\Http\\Controllers\\App\\'.$controller.'Controller','getPublic'])->name('api.'.$name);
+		}
+		else {
+			Route::get('/'.$name.'/{slug}', ['App\\Http\\Controllers\\App\\'.$controller.'Controller','getPublicBySlug'])->name('api.'.$name);
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BACKEND
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public static function setModelBackendRoutes(string $name, bool $isChildModel=false, string $controller = null): void {
+
+		$name = Str::lower($name);
+		$controller = Str::studly(empty($controller) ? $name : $controller);
+
+		Route::post('backend/'.$name, 			['App\\Http\\Controllers\\Backend\\'.$controller.'Controller','getBackendList'])->name('api.backend.'.$name.'.list');
+		Route::get('backend/'.$name.'/{id}', 	['App\\Http\\Controllers\\Backend\\'.$controller.'Controller','getBackend'])->name('api.backend.'.$name);
+		Route::post('backend/'.$name.'/save', 	['App\\Http\\Controllers\\Backend\\'.$controller.'Controller','save'])->name('api.backend.'.$name.'.save');
+		Route::post('backend/'.$name.'/delete', ['App\\Http\\Controllers\\Backend\\'.$controller.'Controller','deleteModel'])->name('api.backend.'.$name.'.delete');
+		Route::post('backend/'.$name.'/sort', 	['App\\Http\\Controllers\\Backend\\'.$controller.'Controller','sortModel'])->name('api.backend.'.$name.'.sort');
+		Route::post('backend/'.$name.'/search', ['App\\Http\\Controllers\\Backend\\'.$controller.'Controller','search'])->name('api.backend.'.$name.'.search');
+
+		if($isChildModel) {
+			Route::get('backend/'.$name.'/child/{parent}', ['App\\Http\\Controllers\\Backend\\'.$controller.'Controller','getBackendChildListSorted'])->name('api.backend.'.$name.'.list.child');
+		}
+	}
+
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+}

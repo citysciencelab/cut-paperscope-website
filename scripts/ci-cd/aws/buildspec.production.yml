@@ -1,0 +1,56 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      # install dependencies
+      - npx browserslist@latest --yes --update-db
+      - npm install
+      - npm audit fix
+      - composer install --optimize-autoloader --no-dev
+
+      # create .env files
+      - cp .env.example .env
+      - cp .env.testing.example .env.testing
+
+      # add trailing "/" to APP URL and MIX_URL
+      - appUrl=$APP_URL"/"
+      - appUrl="$(sed -E 's/\/\/$/\//g' <<<$appUrl)"
+
+      # update APP_URL in .env
+      - appUrl="$(sed -E 's/\//\\\//g' <<<$appUrl)"
+      - sed -i "/^APP_URL/ s/=.*/=\"$appUrl\"/" .env
+
+      # add root passwords
+      - sed -i "/^ROOT_PASSWORD/ s/=.*/=\"$ROOT_PASSWORD\"/" .env
+      - sed -i "/^ROOT_PASSWORD/ s/=.*/=\"$ROOT_PASSWORD\"/" .env.testing
+
+      # set env to productionå
+      - sed -i "/^APP_ENV/ s/.*/APP_ENV=production/" .env
+      - sed -i "/^APP_DEBUG/ s/.*/APP_DEBUG=false/" .env
+      - sed -i "/^APP_LIVERELOAD/ s/.*/APP_LIVERELOAD=false/" .env
+      - sed -i "/^DEBUGBAR_ENABLED/ s/.*/DEBUGBAR_ENABLED=false/" .env
+
+  build:
+    commands:
+      # compile javascript
+      - npm run production
+
+      # init laravel app
+      - php artisan key:generate
+      - php artisan key:generate --env=testing
+			- php artisan storage:link
+      - php artisan migrate --force
+
+  post_build:
+    commands:
+      # remove unnecessary assets
+      - rm -rf node_modules
+      - rm -rf _assets
+      - rm -rf tests
+
+
+artifacts:
+  files:
+    - '**/*'
+

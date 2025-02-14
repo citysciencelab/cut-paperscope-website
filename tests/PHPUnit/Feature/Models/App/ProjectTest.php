@@ -1,0 +1,140 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace Tests\PHPUnit\Feature\Models\App;
+
+	// Laravel
+	use Tests\PHPUnit\TestCase;
+	use Illuminate\Foundation\Testing\RefreshDatabase;
+	use Illuminate\Support\Facades\Schema;
+
+	// App
+	use App\Models\App\Project;
+	use App\Models\App\Base\Fragment;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    CLASS DECLARATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+class ProjectTest extends TestCase {
+
+	use RefreshDatabase;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    SCHEMA
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function test_database_has_expected_columns() {
+
+		$this->assertTrue(
+		  Schema::hasColumns('projects', [
+			...$this->getBaseProps(),
+			'title', 'scene', 'mapping',
+			$this->translateProp('description'),
+		]), 1);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    PERMISSIONS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function test_existing_permissions_for_project() {
+
+		// arrange
+		$this->seed();
+
+		// assert
+		$this->assertDatabaseHas('permissions', ['name' => 'create projects']);
+		$this->assertDatabaseHas('permissions', ['name' => 'edit projects']);
+		$this->assertDatabaseHas('permissions', ['name' => 'delete projects']);
+	}
+
+
+	public function test_permissions_for_user() {
+
+		$this->assertRoleHasPermission('user', 'create projects');
+		$this->assertRoleHasPermission('user', 'edit projects');
+		$this->assertRoleHasPermission('user', 'delete projects');
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	FRAGMENT RELATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function test_has_public_fragment_relation() {
+
+		// arrange
+		$fragment = Fragment::factory()->public();
+ 		$project = Project::factory()->public()->has($fragment)->create();
+
+		// act: add relation to model
+		$project->load('fragments');
+		$fragment = $project->fragments->first();
+		$this->assertCount(1, $project->fragments);
+
+		// assert: deleted model
+		$deleted = $project->delete();
+		$this->assertTrue($deleted);
+		$this->assertDatabaseMissing('fragments', ['id' => $fragment->id]);
+	}
+
+
+	public function test_has_no_public_fragment_relation() {
+
+		// arrange
+ 		$project = Project::factory()->public()->create();
+		Fragment::factory()->public()->create(['parent_id'=>$project->id, 'parent_type'=>Project::class]);
+		Fragment::factory()->create(['public'=>false, 'parent_id'=>$project->id, 'parent_type'=>Project::class]);
+
+		// act/assert
+		$project->load('fragments');
+		$this->assertCount(1, $project->fragments);
+	}
+
+
+	public function test_has_fragment_relation_in_backend() {
+
+		// arrange
+		$this->loginAsAdmin();
+ 		$project = Project::factory()->public()->create();
+		Fragment::factory()->public()->create(['parent_id'=>$project->id, 'parent_type'=>Project::class]);
+		Fragment::factory()->create(['public'=>false, 'parent_id'=>$project->id, 'parent_type'=>Project::class]);
+
+		// act
+		request()->headers->set('x-context', 'backend');
+		$project->load('fragments');
+
+		// assert
+		$this->assertCount(2, $project->fragments);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+} // end class

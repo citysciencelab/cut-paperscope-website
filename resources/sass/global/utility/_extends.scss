@@ -1,0 +1,253 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	LAYOUT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// RELATIVE
+	/////////////////////////////////
+
+	%relative {
+
+		width: 		100%;
+		display: 	block;
+		position: 	relative;
+		top: 		0;
+		left: 		0;
+	}
+
+
+	%relative-inline-block {
+
+		width: 		auto;
+		display: 	inline-block;
+		position: 	relative;
+		top: 		0;
+		left: 		0;
+	}
+
+
+	%relative-flex {
+
+		@extend %relative;
+		@extend %flex;
+	}
+
+
+	/////////////////////////////////
+	// ABSOLUTE
+	/////////////////////////////////
+
+	%absolute {
+
+		width: 		100%;
+		display: 	block;
+		position: 	absolute;
+		top: 		0;
+		left: 		0;
+	}
+
+
+	%absolute-flex {
+
+		@extend %absolute;
+		@extend %flex;
+	}
+
+
+	/////////////////////////////////
+	// FIXED
+	/////////////////////////////////
+
+	%fixed {
+
+		width: 		100%;
+		display: 	block;
+		position: 	fixed;
+		top: 		0;
+		left: 		0;
+	}
+
+
+	%fixed-flex {
+
+		@extend %fixed;
+		@extend %flex;
+	}
+
+
+	/////////////////////////////////
+	// FLEX
+	/////////////////////////////////
+
+	%flex {
+
+		display: 	-webkit-box;
+		display: 	-moz-box;
+		display: 	-ms-flexbox;
+		display: 	-webkit-flex;
+		display: 	-o-flex;
+		display: 	flex;
+	}
+
+
+	/////////////////////////////////
+	// BUTTON
+	/////////////////////////////////
+
+	%clear-button {
+
+		appearance: none;
+		outline: none;
+		border: none;
+		background: none;
+		cursor: pointer;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	ALIGNMENT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	%center-vertical, .center-vertical {
+
+		min-height: 		var(--vh,100vh);
+		display: 			flex;
+		flex-direction: 	column;
+		justify-content: 	center;
+	}
+
+
+	%center-flex, .center-flex {
+
+		display: 			flex;
+		flex-direction: 	column;
+		justify-content: 	center;
+		align-items: 		center;
+	}
+
+
+	%center-absolute, .center-absolute {
+
+		top: 		50%;
+		left: 		50%;
+		transform: 	translate(-50%,-50%);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	TYPO
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	@mixin hyphens {
+
+		hyphens: auto !important;
+	}
+	%hyphens, .hyphens { @include hyphens; }
+
+
+	@mixin no-hyphens {
+
+		hyphens: none !important;
+	}
+	%no-hyphens, .no-hyphens { @include no-hyphens; }
+
+
+	%no-select, .no-select {
+
+		user-select: none;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DEVELOPMENT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/* helper for development. Adds the layout grid to background */
+	%dev, .dev {
+
+		outline: 1px solid blue;
+		outline-offset: -1px;
+
+		&::before {
+
+			@extend %absolute;
+
+			height: 100%;
+			width: calc(100% - var(--pagePadding) * 2);
+			left: var(--pagePadding);
+			content: "";
+			background: transparent url($public+'/img/app/develop/grid-desktop.png') no-repeat 0 0 / 100% 100%;
+		}
+	}
+
+	@include breakpoint('tablet') {
+
+		.dev::before {
+			background: transparent url($public+'/img/app/develop/grid-tablet.png') no-repeat 0 0 / 100% 100%;
+		}
+	}
+
+	@include breakpoint('mobile') {
+
+		.dev::before {
+			background: transparent url($public+'/img/app/develop/grid-mobile.png') no-repeat 0 0 / 100% 100%;
+		}
+	}
+
+	/* adds a label "work in progress" to an element */
+	%wip, .wip {
+
+		outline: 1px solid rgba(240,35,135,0.6) !important;
+		outline-offset: -1px !important;
+
+		&::after {
+			@extend %absolute;
+
+			content: 		"work in progress";
+			display: 		block;
+			padding: 		5px 0 6px 0;
+			background: 	rgba(240,35,135,0.6);
+			color: 			#fff;
+			font: 			bold 10px/10px sans-serif;
+			text-align: 	center;
+		}
+	}
+
+
+	%devbox, .devbox {
+
+		--color: rgba(240,35,135,0.6);
+
+		border-style: solid !important;
+		border-width: 1px !important;
+		border-color: var(--color);
+
+		&::after {
+			@extend %absolute;
+
+			content: 		"devbox";
+			width:  		auto;
+			display: 		block;
+			padding: 		2px 4px 3px 4px;
+			background: 	var(--color);
+			color: 			#fff;
+			font: 			bold 10px/10px sans-serif;
+			text-align: 	center;
+		}
+	}
+

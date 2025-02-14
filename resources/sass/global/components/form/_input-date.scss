@@ -1,0 +1,250 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INPUT DATE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// reset readonly input styles
+	input.input-date {
+
+		background: 	var(--inputBackground);
+		border: 		var(--inputBorder);
+		max-width: 		250px;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SELECTOR
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.date-selector {
+
+		max-width: 300px;
+	}
+
+
+	/////////////////////////////////
+	// HEADER
+	/////////////////////////////////
+
+	.date-header {
+
+		@extend %relative-flex;
+		@extend %no-select;
+
+		justify-content: 	space-between;
+		align-items: 		center;
+		margin-bottom: 		5px;
+
+		p {
+			margin: 		0;
+			text-align: 	center;
+			font-weight: 	bold;
+		}
+	}
+
+
+	.date-header-btn {
+
+		@extend %clear-button;
+
+		position: 	relative;
+		width: 		40px;
+		height: 	30px;
+		cursor: 	pointer;
+	}
+
+	.date-header-btn:last-child { transform: rotate(180deg); }
+
+
+	@include hover() {
+
+		.date-header-btn:hover {
+
+			.svg-icon {
+
+				fill: var(--btnBackgroundHover);
+			}
+		}
+	}
+
+	.date-header-btn:focus-visible {
+
+		outline: 2px solid var(--colorLinkFocus);
+		outline-offset: -2px;
+	}
+
+
+	/////////////////////////////////
+	// TIME
+	/////////////////////////////////
+
+	.date-selector-time {
+
+		@extend %relative-flex;
+
+		align-items: 		center;
+		justify-content: 	space-between;
+		margin-top: 		1rem;
+	}
+
+
+	.input-date-time {
+
+		display: 			flex;
+		align-items: 		center;
+		justify-content: 	flex-end;
+		margin-bottom: 		0;
+
+		label {
+			width: 			auto;
+			margin: 		0 10px 0 0;
+			overflow: 		unset;
+			text-overflow: 	unset;
+		}
+
+		input { max-width: 100px; }
+	}
+
+
+	/////////////////////////////////
+	// BUTTONS
+	/////////////////////////////////
+
+	.date-selector-reset {
+
+		@extend %relative;
+		@extend %clear-button;
+
+		width: 		33px;
+		height: 	33px;
+		cursor: 	pointer;
+	}
+
+
+	.date-selector .form-row-buttons {
+
+		margin: 			2rem 0 0 0;
+		padding-bottom: 	2px;
+		display: 			flex;
+		justify-content: 	space-between;
+
+		& > * { margin-bottom: 0; }
+		.btn { margin: 0; }
+	}
+
+
+	@include hover() {
+
+		.date-selector-reset:hover {
+
+			.svg-icon {	fill: var(--btnBackgroundHover); }
+		}
+	}
+
+	.date-selector-reset:focus-visible {
+
+		outline: 2px solid var(--colorLinkFocus);
+		outline-offset: -2px;
+	}
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CALENDAR
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.date-calendar {
+
+		@extend %relative;
+
+		margin: 		0 auto;
+		padding: 		0;
+		border-radius: 	5px;
+		border: 		1px solid transparent;
+
+		display: 	grid;
+		grid-gap: 	5px;
+  		grid-template-columns: repeat(7, 1fr);
+	}
+
+	.date-calendar.error { border-color: var(--inputColorError); }
+
+
+	/////////////////////////////////
+	// DAYS
+	/////////////////////////////////
+
+	.date-calendar-day,
+	.date-calendar-weekday {
+
+		@extend %relative;
+		@extend %no-select;
+		@extend %clear-button;
+
+		width: 			auto;
+		padding: 		10% 0;
+		background: 	#f5f7f9;
+		font: 			var(--fontCopy);
+		text-align: 	center;
+		cursor: 		pointer;
+		border-radius: 	2px;
+		transition: 	all 0.15s ease;
+	}
+
+	.date-calendar-day.today { box-shadow: inset 0 -1px 0 var(--btnBackground); }
+	.date-calendar-day:not(.current) { background: transparent; }
+
+
+	@include hover() {
+
+		.date-calendar-day:hover {
+
+			background: var(--btnBackgroundHover);
+			color: 		var(--btnColorHover);
+		}
+	}
+
+	.date-calendar-day:focus-visible {
+
+		outline: 2px solid var(--colorLinkFocus);
+		outline-offset: -2px;
+	}
+
+	.date-calendar-day.active {
+
+		background: var(--btnBackgroundActive);
+		color: 		var(--btnColorActive);
+	}
+
+
+	/////////////////////////////////
+	// WEEKDAYS
+	/////////////////////////////////
+
+	.date-calendar-weekday {
+
+		background: 	transparent;
+		font-weight: 	bold;
+		padding: 		5% 0;
+	}
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MOBILE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	@include breakpoint('mobile') {
+
+		input.input-date { max-width: 100%; }
+	}

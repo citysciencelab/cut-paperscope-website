@@ -1,0 +1,22 @@
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1625997626572",
+    "Statement": [
+        {
+            "Sid": "Stmt1625997622244",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::starter-laravel-default/*"
+        },
+        {
+            "Sid": "Stmt1626006030323",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::__ID__:user/__IAM_USER__"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::starter-laravel-default"
+        }
+    ]
+}

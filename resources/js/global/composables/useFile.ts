@@ -1,0 +1,95 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// vue
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	COMPOSABLE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+export const useFile = () => {
+
+
+	/////////////////////////////////
+	// TYPE
+	/////////////////////////////////
+
+	/**
+	 * Get file type from a filename/path via file extension.
+	 * Possible types: image, media, doc, code, file
+	 */
+
+	function getFileType(filename:string | {basename:string}): string | null {
+
+		if(!filename) { return null };
+		const file = typeof filename === 'object' ? filename.basename : filename;
+
+		// get file extension
+		let ext = file.split('.').pop().toLowerCase();
+		ext = ext.split('?')[0];
+
+		switch(ext) {
+			case 'png':		return 'image';
+			case 'jpg':		return 'image';
+			case 'jpeg':	return 'image';
+			case 'gif':		return 'image';
+			case 'svg':		return 'image';
+			case 'webp':	return 'image';
+			case 'mp4':		return 'media';
+			case 'mp3':		return 'media';
+			case 'pdf':		return 'doc';
+			case 'txt':		return 'doc';
+			case 'doc':		return 'doc';
+			case 'vtt':		return 'doc';
+			case 'gltf':	return '3d';
+			case 'glb':		return '3d';
+			case 'html': 	return 'code';
+			default: 	 	return 'file';
+		}
+	}
+
+
+	/////////////////////////////////
+	// SIZE
+	/////////////////////////////////
+
+	/**
+	 * Format file size in bytes to human readable format.
+	 * Returns string with size in KB or MB.
+	 */
+
+	function formatFileSize(size: number): string {
+
+		if(size < 0) { return '0 KB'; }
+
+		const s = Math.round(size/1024*10)/10;
+
+		if(s>1024) 	{ return Math.round(s/1024*10)/10 + ' MB'; }
+		else 		{ return s + ' KB'; }
+	}
+
+
+	/////////////////////////////////
+	// EXPORT
+	/////////////////////////////////
+
+	return {
+		getFileType, formatFileSize
+	};
+
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+
+};

@@ -1,0 +1,105 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	GLOBAL VARS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$breakpoints: (
+		'tablet': 			1050px,				// tablet landscape
+		'tablet_portrait': 	780px,				// tablet portrait
+		'mobile':			540px,				// big smartphones
+		's':				320px,				// old smartphones
+	);
+
+
+	// use vw without scrollbar. Variable is updated by javascript.
+	$vw100: var(--vw,100vw);
+
+	// use correct 100vh on mobile devices.
+	$vh100: var(--vh,100vh);					// updated by javascript based on user agent
+	$vh100Min: var(--vhMin,100vh);				// height of the viewport minus the height of the browser controls
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// utility
+	@import "./utility/mixins";
+	@import "./utility/extends";
+	@import "./utility/vue";
+
+	// global
+	@import "./global-typo";
+	@import "./global-layout";
+
+	// popup
+	@import "./components/popup/lightbox";
+	@import "./components/popup/popup";
+	@import "./components/popup/popup-modal";
+	@import "./components/popup/popup-error";
+
+	// content
+	@import "./components/content/global-btn";
+	@import "./components/content/svg-item";
+	@import "./components/content/lazy-picture";
+	@import "./components/content/accordion";
+	@import "./components/content/scroller";
+	@import "./components/content/slider";
+	@import "./components/content/loading-spinner";
+	@import "./components/content/scaled-text";
+
+	// form
+	@import "./components/form/global-form";
+	@import "./components/form/input-select";
+	@import "./components/form/input-checkbox";
+	@import "./components/form/input-date";
+	@import "./components/form/input-fragments";
+	@import "./components/form/input-relation";
+	@import "./components/form/input-richtext";
+	@import "./components/form/input-file";
+	@import "./components/form/file-uploader";
+
+	// navi
+	@import "./components/navi/language-select";
+
+	// user
+	@import "./components/user/user-image";
+	@import "./components/user/user-image-upload";
+	@import "./components/user/user-subscription";
+
+	// shop
+	@import "./components/shop/stripe-invoice";
+
+	// video
+	@import "./components/video/video-player";
+
+	// pages
+	@import "./pages/page-error";
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	GLOBAL
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	* 					{ margin: 0; padding: 0; box-sizing: border-box; }
+	body 				{ --mobile: #{map-get($breakpoints,"mobile")}; --tablet: #{map-get($breakpoints,"tablet")}; --tabletPortrait: #{map-get($breakpoints,"tablet_portrait")}; }
+	img,figure.image 	{ @extend %relative; @extend %no-select; border: 0px solid; }
+	a 					{ text-decoration: none; outline: 0; }
+	ul,ol 				{ padding-left: 1.5rem; }
+
+	sub, sup 			{ position: relative; font-size: 75%; line-height: 0; vertical-align: baseline; } // Prevent `sub` and `sup` from affecting the line height
+	sub 				{ bottom: -0.25em; }
+	sup 				{ top: -0.5em; }
+
+	img:not([src]):not([srcset]) { visibility: hidden; } 				// hide empty images while lazy loading
+

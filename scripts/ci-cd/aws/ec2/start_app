@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# create local storage
+cd /var/www/laravel-default
+rm -rf public/storage
+php artisan storage:link
+
+# caching / performance optimization
+php artisan config:cache
+php artisan route:cache
+
+# change owner to webserver user
+chown -R apache:apache /var/www/laravel-default
+
+# symbolic link to project
+rm -rf /var/www/html
+ln -s /var/www/laravel-default/public /var/www/html
+
+# update apache config
+cp /var/www/laravel-default/scripts/aws/ec/ec2.conf /etc/httpd/conf.d/ec2.conf
+chown -R root:root /etc/httpd/conf.d/ec2.conf
+
+# start apache
+systemctl restart httpd.service
+systemctl enable httpd.service

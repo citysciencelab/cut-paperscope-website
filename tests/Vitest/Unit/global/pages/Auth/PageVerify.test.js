@@ -1,0 +1,90 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// vue
+	import { nextTick } from 'vue'
+	import { mount } from '@vue/test-utils';
+	import { mockedRouter } from '@tests/Vitest/Helper/Mocks/useRouterMock';
+	import { mockedPage } from '@tests/Vitest/Helper/Mocks/usePageMock';
+	import { mockedForm } from '@tests/Vitest/Helper/Mocks/useFormMock';
+	import { mockedUser } from '@tests/Vitest/Helper/Mocks/useUserMock';
+
+	// test component
+	import PageVerify from '@global/pages/auth/PageVerify.vue';
+	import Btn from '@global/components/content/Btn.vue';
+
+
+
+/*//////////////////////////////////////////////////////////////////////x/////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	COMPONENT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('renders page', () => {
+
+		// act
+		const wrapper = mount(PageVerify);
+
+		// assert
+		expect(wrapper.get('h1').text()).toContain('Registrierung abschließen');
+		expect(wrapper.get('.btn-resend').attributes('label')).toContain('Bestätigungslink');
+	});
+
+
+
+/*//////////////////////////////////////////////////////////////////////x/////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	RESEND LINK
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('resend verify link', async () => {
+
+		// arrange
+		const wrapper = mount(PageVerify);
+
+		// act
+		wrapper.get('.btn-resend').trigger('click');
+		await new Promise(resolve => setTimeout(resolve, 1000));
+
+		// assert
+		expect(wrapper.get('.form-row-buttons').attributes('style')).toContain('opacity: 0');
+	});
+
+
+	test('resend verify link exception', async () => {
+
+		// arrange axios
+		vi.spyOn(window.axios, 'post').mockRejectedValue({
+			response: {
+				data: {
+					errors: { email: ['The email field is required.'], }
+				}
+			}
+		});
+
+		// arrange
+		const wrapper = mount(PageVerify, {
+			global: { components: { Btn } }
+		});
+
+		// act
+		wrapper.get('.btn-resend').trigger('click');
+		await new Promise(resolve => setTimeout(resolve, 1000));
+
+		// assert: button still visible
+		expect(wrapper.get('.form-row-buttons').attributes('style')).toContain('opacity: 1');
+	});
+
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+

@@ -1,0 +1,72 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	FILTER SLIDER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.filter-slider {
+
+		@extend %relative-inline-block;
+
+		width: 			auto;
+		background: 	#F5F5F5;
+		border-radius: 	20px;
+		margin-bottom: 	var(--layoutUnit);
+	}
+
+
+	/////////////////////////////////
+	// ITEM
+	/////////////////////////////////
+
+	.filter-slider-item {
+
+		@extend %relative-inline-block;
+
+		width: 			auto;
+		margin: 		0 10px 0px 0px;
+		background: 	transparent !important;
+		color: 			var(--colorCopy);
+		border-radius: 	20px;
+
+		-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+
+		&:last-child { margin-right: 0; }
+	}
+
+
+	.filter-slider-item.active {
+
+		color: #fff !important;
+	}
+
+
+	@include hover() {
+
+		.filter-slider-item:not(.active):hover {
+
+			color: var(--btnBackground);
+		}
+	}
+
+
+	/////////////////////////////////
+	// BACKGROUND
+	/////////////////////////////////
+
+	.filter-slider-background {
+
+		@extend %absolute;
+
+		width: 			0;
+		height: 		100%;
+		margin: 		0;
+		border-radius: 	20px;
+		background: 	var(--btnBackground);
+	}
+
+	.filter-slider-item.background {
+		background: 	var(--btnBackground) !important;
+	}
+

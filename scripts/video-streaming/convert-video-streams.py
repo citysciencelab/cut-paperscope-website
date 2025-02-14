@@ -1,0 +1,220 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+
+import requests
+import sys
+import os
+import shortuuid
+from urllib.parse import urlparse
+import time
+import shutil
+
+# aws sdk
+import boto3
+from botocore.exceptions import ClientError
+
+
+# install notes:
+#pip3 install boto3
+#pip3 install shortuuid
+#pip3 install requests
+
+
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CONFIG
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+
+config = {
+	'develop': {
+		"s3Profile": 	'femmecapital-dev',
+		"s3Bucket": 	'femmecapital-platform-hn',
+		"urlGet": 		'http://localhost/femmecapital/website/public/converter/get',
+		"urlSave": 		'http://localhost/femmecapital/website/public/converter/save'
+	},
+	'production': {
+		"s3Profile":  	'femmecapital-live',
+		"s3Bucket": 	'femmecapital-platform',
+		"urlGet": 		'https://www.femmecapital.de/converter/get',
+		"urlSave": 		'https://www.femmecapital.de/converter/save'
+	}
+}
+
+
+activeConfig = config['develop']
+
+
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DOWNLOAD
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+
+def downloadVideo():
+
+	print("=== DOWNLOAD ===")
+
+	with open('./file.mp4', "wb") as f:
+		response = requests.get(file, stream=True)
+		total_length = response.headers.get('content-length')
+
+		if total_length is None: # no content length header
+			f.write(response.content)
+		else:
+			dl = 0
+			total_length = int(total_length)
+			for data in response.iter_content(chunk_size=4096):
+				dl += len(data)
+				f.write(data)
+				done = int(50 * dl / total_length)
+				sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )
+				sys.stdout.flush()
+	print('\n')
+
+
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	VIDEO CONVERT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+
+def convertStream():
+
+	print("=== CONVERT VIDEO ===")
+
+	os.system("./create-video-stream.sh " + shortId)
+	print('\n')
+
+
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	UPLOAD
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+
+def uploadStream():
+
+	print("=== UPLOAD STREAM ===")
+
+	# create relative key from bucket
+	key = urlparse(file).path.split('files/')[0] + shortId
+	print('key: ' + key);
+
+	# upload files
+	target = 's3://' + activeConfig['s3Bucket'] + key
+	response = os.system('aws s3 sync --profile ' + activeConfig['s3Profile'] + ' ./' + shortId + ' "' + target + '"')
+
+	if response != 0:
+		sys.exit();
+
+	print('\n')
+
+
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	UPDATE DATABASE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+
+def updateDatabase():
+
+	print("====== UPDATE DATABASE ======")
+
+	requestData = {'id':modelId, 'property': property, 'shortid':shortId, 'hash':'2c3bd5939a0d3a59d13c2f43fd2df2c2e8aa792962732e1388df2224a01e523fc546beff0296b8331fea1d72250745ac1f01a0b8887f1d2a5c3c07a66f7e735e'}
+	response = requests.post(activeConfig['urlSave'], data = requestData)
+	responseData = response.json()
+
+	if responseData['status'] == 'success':
+		print("success")
+	else:
+		print("error")
+
+	print('\n')
+
+
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	REMOVE FOLDER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+def removeFolder():
+
+	folder = shortId
+
+	try:
+		shutil.rmtree(folder)
+	except OSError as e:
+		print("Error: %s - %s." % (e.filename, e.strerror))
+
+	print('\n')
+
+
+
+"""///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MAIN LOOP
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// """
+
+i=0
+while i<1:
+
+	# get video file for converting
+	requestData = {'hash':'2c3bd5939a0d3a59d13c2f43fd2df2c2e8aa792962732e1388df2224a01e523fc546beff0296b8331fea1d72250745ac1f01a0b8887f1d2a5c3c07a66f7e735e'}
+	response = requests.post(activeConfig["urlGet"], data = requestData)
+
+	# skip and wait if no video available
+	if response.status_code != 200:
+		print('NO DATA AVAILABLE')
+		time.sleep(60.0)
+		continue
+
+	# get properties of video
+	responseData = response.json()
+	print("=== CONVERT VIDEO =========================\n")
+	property = responseData['property']
+	modelId = responseData['data']['id']
+	file = responseData['data'][ property ]
+
+	print("=== MODEL PARAMS ===")
+	print('shortid: ' + responseData['data']['shortid'])
+	print('name: ' + responseData['data']['name'])
+	print('file: ' + file)
+	print("\n")
+
+	# create shortid for stream
+	shortId = shortuuid.ShortUUID().random(length=15)
+	shortId = "6frTxcxT3YxZJ4m"
+
+	# process video
+	#downloadVideo()
+	#convertStream()
+	uploadStream()
+	updateDatabase()
+	removeFolder()
+
+	print("=== DONE ==================================\n")
+	print("\n\n")
+
+	#time.sleep(5.0)
+	i = 1

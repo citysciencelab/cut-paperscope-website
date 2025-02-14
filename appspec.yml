@@ -1,0 +1,25 @@
+version: 0.0
+os: linux
+
+
+files:
+  - source: /
+    destination: /var/www/hcu-paperscope/
+
+
+hooks:
+
+  ApplicationStop:
+    - location: scripts/aws/ec2/stop_app
+      timeout: 300
+      runas: root
+
+  Install:
+    - location: scripts/aws/ec2/install_dependencies
+      timeout: 300
+      runas: root
+
+  AfterInstall:
+    - location: scripts/aws/ec2/start_app
+      timeout: 300
+      runas: root

@@ -1,0 +1,18 @@
+{
+  "type": "module",
+  "exports": {
+	"sass_component": "./new_sass_component.js",
+	"sass_page": "./new_sass_page.js",
+	"vue_component": "./new_vue_component.js",
+	"vue_page": "./new_vue_page.js"
+  },
+  "scripts": {
+	"sass_component": "node new_sass_component.js",
+	"sass_page": "node new_sass_page.js",
+    "vue_component": "node new_vue_component.js",
+    "vue_page": "node new_vue_page.js"
+  },
+  "devDependencies": {
+    "inquirer": "^9.1.5"
+  }
+}

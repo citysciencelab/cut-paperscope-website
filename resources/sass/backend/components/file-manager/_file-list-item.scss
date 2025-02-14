@@ -1,0 +1,106 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	FILE LIST ITEM
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.file-list-item {
+
+
+		background-color: 	$colorGrayLight;
+		transition: 		background-color .3s ease-in-out;
+
+		align-items: 		center;
+		cursor: 			pointer;
+
+		td { padding: 2px; }
+		p { margin: 0; }
+		&:last-child { margin-bottom: 0; }
+	}
+
+
+	/////////////////////////////////
+	// ICON
+	/////////////////////////////////
+
+	.file-list-item-icon {
+
+		position: 		relative;
+		width: 			24px;
+		height: 		24px;
+		margin-right: 	3px;
+		margin-bottom: 	1px;
+	}
+
+
+	/////////////////////////////////
+	// LABEL
+	/////////////////////////////////
+
+	.file-list-item-label {
+
+		width: 			100%;
+		word-break: 	keep-all;
+		white-space: 	nowrap;
+		overflow: 		hidden;
+		text-overflow: 	ellipsis;
+		max-width: 		calc(100%);
+		flex-grow: 		2;
+	}
+
+
+	/////////////////////////////////
+	// ATTRIBUTES
+	/////////////////////////////////
+
+	td.file-list-item-attributes {
+
+		white-space: 	nowrap;
+		padding-right: 	7px;
+		max-width: 		70px;
+		text-align: 	right;
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	@include hover() {
+
+		.file-list-item:hover {
+
+			background-color: 	rgb(247, 249, 252);
+		}
+	}
+
+
+	/////////////////////////////////
+	// SELECTED
+	/////////////////////////////////
+
+	.file-list-item.selected {
+
+		background-color: $colorGrayLight;
+
+		.file-list-item-label { color: $colorCtaHover; }
+		.svg-icon { fill: $colorCtaHover; }
+	}
+
+
+	/////////////////////////////////
+	// LOADING
+	/////////////////////////////////
+
+	.file-list-item.loading {
+
+		background-color: 	transparent;
+
+		svg {
+			margin: 		0 auto;
+			position: 		relative;
+			width: 			70px;
+			height: 		24px;
+		}
+	}

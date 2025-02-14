@@ -1,0 +1,116 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DATA LIST
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.data-list {
+
+		position: 			relative;
+		width: 				100%;
+		table-layout: 		fixed;
+		margin-bottom: 		20px;
+
+		padding: 			5px;
+		border: 			1px solid $colorGrayLightHover;
+		border-radius: 		5px;
+		border-collapse: 	separate;
+  		border-spacing: 	0 2px;
+
+		col:first-child { width: 35%; }
+		col.max-width { width: 200px; }
+		th { padding-bottom: 4px; }
+		col:last-child { width: 100px; } // default with for 3 buttons
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DATA LIST HEADER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.data-list-header-item {
+
+		@extend %no-select;
+
+		white-space: 		nowrap;
+		overflow-x: 		hidden;
+		text-overflow: 		ellipsis;
+		vertical-align: 	middle;
+		padding: 			0 10px;
+
+		text-align: 		left;
+		font-weight: 		bold;
+
+		transition: 		color 0.3s;
+	}
+
+	.data-list-header-item.bool { text-align: center; }
+
+
+	.data-list-header-item:not(.sortable) {
+
+		cursor: pointer;
+	}
+
+
+	.data-list-header-item.asc, .data-list-header-item.desc {
+
+		color: $colorActive;
+		.svg-icon { fill: $colorActive; }
+
+		&.desc .svg-icon { transform: rotate(180deg); }
+	}
+
+
+	.data-list-header-direction {
+
+		position: 	relative;
+		display: 	inline-block;
+		width: 		10px;
+		height: 	20px;
+
+		vertical-align: middle;
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	@include hover() {
+
+		.data-list-header-item:not(.sortable):hover {
+
+			color: $colorCtaHover;
+			.svg-icon { fill: $colorCtaHover; }
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MOBILE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+	@include breakpoint('tablet') {
+
+		.data-list col:first-child { width: 30%; }
+	}
+
+
+	@include breakpoint('mobile') {
+
+		.data-list {
+
+			col, th, td { display: none; }
+			col:first-child, th:first-child, td:first-child { display: table-cell; }
+			col:last-child, th:last-child, td:last-child { display: table-cell; }
+		}
+	}

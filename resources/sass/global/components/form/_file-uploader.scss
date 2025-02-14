@@ -1,0 +1,121 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	FILE UPLOADER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.file-uploader-popup {
+
+		max-width: 600px;
+	}
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	UPPY UI
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.popup .uppy-Root {
+
+		font-family: var(--fontFamily);
+		color: var(--colorCopy);
+	}
+
+
+	/////////////////////////////////
+	// DASHBOARD EMPTY
+	/////////////////////////////////
+
+	.popup .uppy-Dashboard-inner {
+
+		background-color: #fcfdfe;
+		border: 0;
+	}
+
+
+	.popup .uppy-Dashboard-browse {
+
+		color: var(--btnBackground);
+	}
+
+	.popup .uppy-Dashboard-AddFiles-title {
+
+		position: absolute;
+		z-index: 2;
+	}
+
+
+	/////////////////////////////////
+	// DASHBOARD FILE HEADER
+	/////////////////////////////////
+
+	.popup .uppy-DashboardContent-back,
+	.popup .uppy-DashboardContent-save,
+	.popup .uppy-DashboardContent-addMore {
+
+		color: 	var(--btnBackground);
+	}
+
+
+	@include hover() {
+
+		.popup .uppy-DashboardContent-back:hover,
+		.popup .uppy-DashboardContent-save:hover,
+		.popup .uppy-DashboardContent-addMore:hover {
+
+			color: 	var(--btnBackgroundHover);
+		}
+	}
+
+
+	/////////////////////////////////
+	// DASHBOARD FILE LIST
+	/////////////////////////////////
+
+	.popup .uppy-Dashboard-Item-action--remove {
+
+		color: 	var(--inputColorError);
+	}
+
+
+	/////////////////////////////////
+	// DASHBOARD FILE FOOTER
+	/////////////////////////////////
+
+	.popup .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload {
+
+		height: 		var(--btnHeight);
+		background: 	var(--btnBackground);
+		color: 			var(--btnColor);
+		border-radius: 	var(--btnRadius);
+		padding: 		var(--btnPadding);
+
+		width: 		auto;
+		min-width: 	200px;
+		margin: 	0 auto;
+	}
+
+
+	.popup .uppy-StatusBar .uppy-StatusBar-actionBtn--done {
+
+		font: var(--fontCopy);
+		color: var(--btnBackground);
+	}
+
+
+	@include hover() {
+
+		.popup .uppy-StatusBar.is-waiting .uppy-StatusBar-actionBtn--upload:hover {
+
+			background: 	var(--btnBackgroundHover);
+			color: 			var(--btnColorHover);
+		}
+
+		.popup .uppy-StatusBar .uppy-StatusBar-actionBtn--done:hover {
+
+			color: var(--btnBackgroundHover);
+		}
+	}

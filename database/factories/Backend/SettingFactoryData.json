@@ -1,0 +1,37 @@
+{
+	"data": [
+		{
+			"id": "ac5240a5-9325-4952-8044-8cd54a628265",
+			"public": true,
+			"order": 0,
+			"name": "Kontakt Name",
+			"category": "Meta",
+			"identifier": "contact_name",
+			"reference": "meta.contact_name",
+			"data_type": "string",
+			"content_de": "Max Mustermann"
+		},
+		{
+			"id": "8311f67b-bcbf-4f36-b0de-b13baa9b4aab",
+			"public": true,
+			"order": 0,
+			"name": "Kontakt E-Mail",
+			"category": "Meta",
+			"identifier": "contact_email",
+			"reference": "meta.contact_email",
+			"data_type": "string",
+			"content_de": "contact@example.com"
+		},
+		{
+			"id": "b52692e7-a6bd-4931-9bc6-202ec665b799",
+			"public": true,
+			"order": 0,
+			"name": "Maximal Anzahl Teaser in Listen",
+			"category": "Global Settings",
+			"identifier": "max_teaser",
+			"reference": "global.max_teaser",
+			"data_type": "number",
+			"content_de": 12
+		}
+	]
+}

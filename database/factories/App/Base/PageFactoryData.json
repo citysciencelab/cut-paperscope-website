@@ -1,0 +1,85 @@
+{
+	"data": [
+		{
+			"id": "5b0d3fec-0948-4e14-ba8a-81cea00e105f",
+			"name": "Hello Nasty",
+			"slug": "hello-nasty",
+			"navi_label_de": "Hello Nasty",
+			"navi_visible": true,
+			"title_de": "Hello Nasty",
+			"meta_title_de": "Hello Nasty",
+			"meta_description_de": "Das Album Hello Nasty",
+			"social_description_de": "Das Album Hello Nasty",
+			"public": true,
+			"published_start": "2022-02-01 12:00:00",
+			"relations": {
+				"items": [
+					"03d003bc-71a7-4016-9d74-d80f234dd86d",
+					"770edb8f-4b45-4f1f-a3cd-1ecd798b36c6",
+					"77638c2e-6b98-4825-94da-af9ce1448105",
+					"1dc5122d-11d3-4656-98b0-09c99224f661",
+					"6aa271cd-5bfb-4213-ad29-f0d1774ff0fc",
+					"9f5daa3e-3c8c-48c7-8789-3a7469480220",
+					"560e961c-f171-4895-869c-fb2efa0dfd99",
+					"c8fda612-5678-4a60-9fa5-376cf5f4c332",
+					"1eddd917-2e5b-40fc-8acd-9c07d23bc939",
+					"de8d56e0-5bcf-46b9-af9b-24bd5aab56a6",
+					"c787127a-3f41-466a-9367-9a455ea4d9e2",
+					"f299217c-cf83-4d4f-ab97-b107b689d4d4",
+					"48194ea8-a8b5-42db-8048-e4b457b1abcb",
+					"daf3fe4c-9ff1-44e6-a64c-305ddc8ebb17",
+					"9e6c56ca-c86a-4ba9-9355-8be87d03218e",
+					"dca9e930-c06b-4c1f-8b71-bd4e7e4ebfd1",
+					"cde3e46e-f7ea-41b8-b8c6-a85f33c11dcd",
+					"55abf0cd-f55e-458e-9ab8-986b494f5fa1",
+					"8f9b938b-689d-41a0-a39b-5447a78fbc6d",
+					"067b8db2-c67a-4f71-a0f0-60ff194d3dfb",
+					"3bb77f0b-cefd-429d-bf09-f71e4ecdaabd"
+				]
+			}
+		},
+		{
+			"id": "7059a22c-3b11-4b5b-852a-6680fd2cd9f2",
+			"name": "Paul's Boutique",
+			"slug": "pauls-boutique",
+			"navi_label_de": "Paul's Boutique",
+			"navi_visible": true,
+			"title_de": "Paul's Boutique",
+			"meta_title_de": "Paul's Boutique",
+			"meta_description_de": "Das Album Paul's Boutique",
+			"social_description_de": "Das Album Paul's Boutique",
+			"public": false,
+			"published_start": "2022-01-01 23:59:00"
+		},
+		{
+			"id": "5ac82ad2-da45-4494-94bc-908d2aeb1f99",
+			"name": "Impressum",
+			"slug": "impressum",
+			"navi_visible": false,
+			"title_de": "Impressum",
+			"title_en": "Imprint",
+			"meta_title_de": "Impressum",
+			"meta_title_en": "Imprint",
+			"meta_description_de": null,
+			"social_description_de": null,
+			"public": true,
+			"order": 100,
+			"published_start": "2022-01-01 23:59:00"
+		},
+		{
+			"id": "36eb541f-c661-4ad7-bd82-5ba937a94a8f",
+			"name": "Datenschutz",
+			"slug": "datenschutz",
+			"navi_visible": false,
+			"title_de": "Datenschutzbestimmungen",
+			"title_en": "Privacy Policy",
+			"meta_title_de": "Datenschutzbestimmungen",
+			"meta_title_en": "Privacy Policy",
+			"meta_description_de": null,
+			"social_description_de": null,
+			"public": true,
+			"order": 101,
+			"published_start": "2022-01-01 23:59:00"
+		}
+	]
+}

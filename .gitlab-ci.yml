@@ -1,0 +1,301 @@
+stages:
+  - install
+  - build
+  - test
+  - deploy
+  - integration
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+
+########################################################
+# CONFIG
+########################################################
+
+variables:
+  # Laravel .env file
+  FEATURE_BACKEND: "true"
+  FEATURE_BACKEND_RESET: "true"
+  FEATURE_APP_ACCOUNTS: "true"
+  FEATURE_SHOP: "false"
+  FEATURE_MULTI_LANG: "true"
+
+# files that trigger php build and tests
+.php-changes: &php-changes
+  changes:
+    - "app/**/*"
+    - "config/**/*"
+    - "database/**/*"
+    - "routes/**/*"
+    - "resources/views/**/*"
+    - "tests/PHPUnit/**/*"
+    - "composer.json"
+    - "composer.lock"
+
+# files that trigger javascript build and tests
+.javascript-changes: &javascript-changes
+  changes:
+    - "resources/js/**/*"
+    - "resources/lang/**/*"
+    - "resources/sass/**/*"
+    - "resources/svg/**/*"
+    - "tests/Vitest/**/*"
+    - "package.json"
+    - "package-lock.json"
+    - "bun.lockb"
+    - "tsconfig.json"
+    - "vite.config.js"
+
+
+########################################################
+# INSTALL
+########################################################
+
+env:
+  stage: install
+  image: alpine:3.20.2
+  before_script:
+    - apk add bash
+  script:
+    - ./scripts/ci-cd/gitlab/install_env.sh
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - .env
+      - .env.testing
+
+
+########################################################
+# BUILD
+########################################################
+
+composer:
+  stage: build
+  image: lorisleiva/laravel-docker:8.2
+  script:
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - vendor/
+  cache:
+    key:
+      files:
+        - composer.json
+        - composer.lock
+    paths:
+      - vendor/
+
+
+bun:
+  stage: build
+  image: oven/bun:1.1.21-alpine
+  variables:
+    DOCKER_DEFAULT_PLATFORM: "linux/amd64"
+  script:
+    - bun install --frozen-lockfile
+    - bun run svg
+    - bun run production
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - public/build/
+      - public/svg/
+      - public/cesium/
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+
+
+########################################################
+# TEST
+########################################################
+
+phpunit:
+  stage: test
+  image: lorisleiva/laravel-docker:8.2
+  before_script:
+    - php artisan migrate:fresh --env=testing
+    # replace localhost storage requests with absolute file path
+    - sed -i 's,env("APP_URL")."storage/testing/",storage_path("app/public/testing"),' config/filesystems.php
+  script:
+    - XDEBUG_MODE=coverage php artisan test --parallel --processes=4 --configuration=./tests/PHPUnit/phpunit.xml --coverage-text --coverage-cobertura=./tests/PHPUnit/CodeCoverage/coverage-cobertura.xml
+  coverage: '/^\s*Lines:\s*\d+.\d+\%/'
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      <<: *php-changes
+    - if: $CI_COMMIT_BRANCH == "develop"
+      allow_failure: true
+  # artifacts:
+  #   when: always
+  #   reports:
+  #     coverage_report:
+  #       coverage_format: cobertura
+  #       path: tests/PHPUnit/CodeCoverage/cobertura-coverage.xml
+
+
+vitest:
+  stage: test
+  image: node:20-alpine3.20
+  needs:
+    - env
+  before_script:
+    # set timezone to "Europe/Berlin"
+    - apk add --no-cache tzdata
+    - cp /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+  script:
+    # install optional dependencies (bugfix npm)
+    - npm install @rollup/rollup-linux-x64-musl --save-optional
+    - npm install vitest
+    - LARAVEL_BYPASS_ENV_CHECK=1 npm run vitest --coverage.reporter=text --coverage.reporter=cobertura
+  coverage: '/All files(?:[^|]*\|){4}\s*(\S+)/'
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      <<: *javascript-changes
+    - if: $CI_COMMIT_BRANCH == "develop"
+      allow_failure: true
+  cache:
+    paths:
+      - node_modules/
+  artifacts:
+    when: always
+    paths:
+      - .env
+      - .env.testing
+    # reports:
+    #   coverage_report:
+    #     coverage_format: cobertura
+    #     path: tests/Vitest/CodeCoverage/cobertura-coverage.xml
+
+
+########################################################
+# DEPLOY
+########################################################
+
+.install_ssh: &install_ssh
+  # prepare ssh
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  # create ssh config
+  - echo "Host target" > ~/.ssh/config
+  - echo "  HostName $SERVER_DOMAIN" >> ~/.ssh/config
+  - echo "  Port $SERVER_PORT" >> ~/.ssh/config
+  - echo "  User $SERVER_USER" >> ~/.ssh/config
+  - echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+  # add private key
+  - echo "$PRIVATE_KEY" > ~/.ssh/id_ed25519
+  - chmod 600 ~/.ssh/id_ed25519
+  # remove trailing slash from $SERVER_PATH
+  - SERVER_PATH=$(echo $SERVER_PATH | sed 's:/*$::')
+
+
+.update_repository: &update_repository
+  - echo "updating repository on $SERVER_DOMAIN:$SERVER_PATH"
+  - rsync -rz --delete vendor/ target:$SERVER_PATH/vendor/
+  # update code
+  - ssh target "cd $SERVER_PATH && git reset --hard && git pull"
+  # upload build artifacts
+  - rsync -r --delete public/build/ target:$SERVER_PATH/public/build/
+  - rsync -r --delete public/svg/ target:$SERVER_PATH/public/svg/
+  - rsync -r --delete public/cesium/ target:$SERVER_PATH/public/cesium/
+  # update laravel
+  - ssh target "cd $SERVER_PATH && ./scripts/ci-cd/gitlab/update_deployment.sh"
+
+
+develop:
+  stage: deploy
+  image: lorisleiva/laravel-docker:8.2
+  resource_group: develop
+  script:
+    - *install_ssh
+    - *update_repository
+  environment:
+    name: develop
+    url: $SERVER_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+
+staging:
+  stage: deploy
+  image: lorisleiva/laravel-docker:8.2
+  resource_group: staging
+  script:
+    - *install_ssh
+    - *update_repository
+  environment:
+    name: staging
+    url: $SERVER_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+
+production:
+  stage: deploy
+  image: lorisleiva/laravel-docker:8.2
+  resource_group: production
+  script:
+    - *install_ssh
+    - *update_repository
+  environment:
+    name: production
+    url: $SERVER_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  when: manual
+
+
+########################################################
+# INTEGRATION TEST
+########################################################
+
+
+.hurl-job: &hurl-job
+  stage: integration
+  image: alpine:3.20.2
+  script:
+    - apk add bash
+    - apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing hurl
+    - echo "verifying deployment on $SERVER_DOMAIN:$SERVER_PATH"
+    - ./scripts/ci-cd/gitlab/hurl_tests.sh $SERVER_URL
+
+hurl-develop:
+  <<: *hurl-job
+  environment:
+    name: develop
+    url: $SERVER_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+  needs:
+    - env
+    - develop
+
+
+hurl-staging:
+  <<: *hurl-job
+  environment:
+    name: staging
+    url: $SERVER_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs:
+    - env
+    - staging
+
+
+hurl-production:
+  <<: *hurl-job
+  environment:
+    name: production
+    url: $SERVER_URL
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs:
+    - env
+    - production

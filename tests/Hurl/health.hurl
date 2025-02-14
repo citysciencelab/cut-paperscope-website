@@ -1,0 +1,3 @@
+# index
+GET {{SERVER_URL}}/
+HTTP 200

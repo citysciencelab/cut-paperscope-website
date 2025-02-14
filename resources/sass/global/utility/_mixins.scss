@@ -1,0 +1,208 @@
+//*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	@use 'sass:meta';
+	@use "sass:map";
+
+
+
+//*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CSS VARS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// write css vars to :root
+	@mixin set-css-vars($values) {
+
+		$keys: map-keys($values);
+		$desktopKeys: filterList($keys, isDesktop);
+		$tabletKeys: filterList($keys, isTablet);
+		$mobileKeys: filterList($keys, isMobile);
+
+		:root {
+			@each $key in $desktopKeys { --#{$key}: #{map-get($values, $key)}; }
+		}
+
+		@include breakpoint('tablet') {
+			:root {
+				@each $key in $tabletKeys { --#{str-replace($key,'Tablet')}: #{map-get($values, $key)}; }
+			}
+		}
+
+		@include breakpoint('mobile') {
+			:root {
+				@each $key in $mobileKeys { --#{str-replace($key,'Mobile')}: #{map-get($values, $key)}; }
+			}
+		}
+	}
+
+
+	@function filterList($list, $callback) {
+
+		$result: ();
+
+		@each $item in $list {
+			@if meta.call(get-function($callback), $item) {
+				$result: append($result, $item);
+			}
+		}
+
+		@return $result;
+	}
+
+
+	// filter callbacks
+	@function isDesktop($key) { @return str-index($key, "Mobile") == null and str-index($key, "Tablet") == null; }
+	@function isTablet($key) { @return str-index($key, "Tablet") != null; }
+	@function isMobile($key) { @return str-index($key, "Mobile") != null; }
+
+
+
+//*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	TYPO
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/* https://gist.github.com/jonathantneal/d0460e5c2d5d7f9bc5e6 */
+	@mixin font-face($name, $path, $weight: null, $style: null, $exts: woff2 woff) {
+
+		$src: null;
+		$extmods: (	eot: "?");
+		$formats: ( otf: "opentype", ttf: "truetype");
+
+		@each $ext in $exts {
+			$extmod: if(map.has-key($extmods, $ext), $ext + map-get($extmods, $ext), $ext);
+			$format: if(map.has-key($formats, $ext), map-get($formats, $ext), $ext);
+			$src: append($src, url(quote($path + "." + $extmod)) format(quote($format)), comma);
+		}
+
+		@font-face {
+			font-family: quote($name);
+			font-style: $style;
+			font-weight: $weight;
+			font-display: swap;
+			src: $src;
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MOBIlE HOVER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/**
+	*	prevents sticky hover effect on mobile devices
+	*
+	*	usage:
+	*
+	*		@include hover() {
+	*
+	* 			.btn:hover {
+	*				background: red;
+	*			}
+	*		}
+	*/
+
+	@mixin hover() {
+
+		@media(hover: hover) and (pointer: fine) {
+			@content;
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BREAKPOINTS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/**
+	*	helper to add correct media query
+	*
+	*	params:
+	*
+	*		breakpoint: px value or key from breakpoint map (mobile, tablet , ...)
+	*		direction: max or min
+	*
+	*	usage:
+	*
+	*		@include breakpoint(600px / 'tablet') {
+	*
+	* 			header {
+	*				height: 50px;
+	*			}
+	*		}
+	*/
+
+	@mixin breakpoint($breakpoint, $direction: max) {
+
+		// value exists in breakpoint map
+		@if map.has-key($breakpoints, $breakpoint) {
+
+			// statement
+			@media (#{$direction}-width: #{map-get($breakpoints, $breakpoint)}) {
+				@content;
+			}
+		}
+		// use px value
+		@else {
+
+			@if unitless($breakpoint) { $breakpoint: $breakpoint + 0px;	}
+
+			// statement
+			@media (#{$direction}-width: $breakpoint) {
+				@content;
+			}
+		}
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SHADOW
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	@mixin box-shadow ($id) {
+
+		@if $id == 'default'	{ box-shadow: 0px 0px 40px rgba(0,0,0,0.15); }
+		@if $id == 'popup' 		{ box-shadow: 2px 10px 40px rgba(0,0,0,0.35); }
+		@if $id == 'small' 		{ box-shadow: 0px 2px 2px rgba(0,0,0,0.1); }
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	HELPER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/* used by font-face */
+	@function str-replace($string, $search, $replace: "") {
+
+		$index: str-index($string, $search);
+		@if $index {
+			@return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+		}
+		@return $string;
+	}
+

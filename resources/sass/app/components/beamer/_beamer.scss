@@ -1,0 +1,65 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	BEAMER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	#beamer {
+
+		@extend %fixed;
+
+		background: black;
+		z-index: 	999999;
+		height: 	100%;
+		overflow: 	hidden;
+		opacity: 	0;
+	}
+
+
+	/////////////////////////////////
+	// BUTTONS
+	/////////////////////////////////
+
+	.beamer-buttons {
+
+		@extend %absolute;
+
+		width: auto;
+		top: 20px;
+		left: 20px;
+
+		.btn.secondary {
+			background-color: transparent;
+			margin: 0 10px 0 0;
+		}
+
+		.btn.secondary.icon { box-shadow: none; }
+
+		.row-scaling {
+
+			display: inline-block;
+			margin: 0 10px 0 0;
+			width: 100px;
+
+			input {
+				height: 36px;
+				background-color: transparent !important;
+				color: #fff;
+				padding-right: 13px;
+			}
+		}
+
+		.btn.socket .svg-icon { fill: $colorPsGreen; }
+		.btn.socket.disconnected .svg-icon { fill: #FA3437; }
+	}
+
+
+	@include hover() {
+
+		.beamer-buttons .btn.secondary:hover {
+			background-color: $colorPsBlue;
+			color: #fff;
+			.svg-icon { fill: #fff; }
+		}
+	}

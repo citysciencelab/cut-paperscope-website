@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../../vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="../../vendor/autoload.php"
+         colors="true"
+         cacheResultFile="./.phpunit.result.cache"
+		 stopOnFailure="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory suffix="Test.php">./Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory suffix="Test.php">./Feature</directory>
+        </testsuite>
+		<testsuite name="Security">
+            <directory suffix="Test.php">./Security</directory>
+        </testsuite>
+    </testsuites>
+	 <source>
+        <include>
+            <directory suffix=".php">../../app</directory>
+        </include>
+		<exclude>
+			<!-- APP ACCOUNTS TEST
+			<file>../../app/Actions/Fortify/RegisterNewUser.php</file>
+			<file>../../app/Http/Controllers/Auth/SsoController.php</file>
+			<file>../../app/Http/Requests/Auth/UserUploadRequest.php</file>
+			APP ACCOUNTS TEST -->
+			<directory suffix=".php">../../app/Http/Controllers/App/Shop</directory>
+			<directory suffix=".php">../../app/Http/Controllers/Backend/Shop</directory>
+            <directory suffix=".php">../../app/Models/Shop</directory>
+            <directory suffix=".php">../../app/Http/Requests/App/Shop</directory>
+            <directory suffix=".php">../../app/Http/Requests/Backend/Shop</directory>
+			<file>../../app/Jobs/Shop/SyncStripeProduct.php</file>
+			<!-- COMMANDS -->
+			<directory suffix=".php">../../app/Console/Commands</directory>
+		</exclude>
+    </source>
+    <php>
+        <server name="APP_ENV" value="testing"/>
+		<server name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <server name="BCRYPT_ROUNDS" value="4"/>
+        <server name="CACHE_STORE" value="array"/>
+        <server name="MAIL_MAILER" value="array"/>
+        <server name="QUEUE_CONNECTION" value="sync"/>
+        <server name="SESSION_DRIVER" value="array"/>
+        <server name="TELESCOPE_ENABLED" value="false"/>
+        <ini name="display_errors" value="true"/>
+    </php>
+
+</phpunit>

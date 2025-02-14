@@ -1,0 +1,227 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INPUT SELECT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.input-select {
+
+		cursor: 			pointer;
+		width: 				auto;
+		display: 			inline-block;
+		vertical-align: 	middle; 			// remove bottom margin caused by line-height
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	NATIVE SELECT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.input-select select {
+
+		@extend %relative;
+
+		height: 			100%;
+		margin: 			0;
+		padding-right: 		var(--inputHeight);
+		background: 		transparent;
+
+		border: 			0;
+		border-radius: 		0;
+
+		appearance:			none;
+		outline: 			none;
+		white-space: 		nowrap;
+	}
+
+
+	/////////////////////////////////
+	// ICON
+	/////////////////////////////////
+
+	.input-select .svg-icon {
+
+		width: 			var(--inputHeight);
+		left: 			auto;
+		right: 			0;
+		border-radius: 	var(--inputBorderRadius);
+		background: 	var(--inputBackground);
+	}
+
+
+	/////////////////////////////////
+	// FOCUS
+	/////////////////////////////////
+
+	.input-select.focus {
+
+		background: 	var(--inputBackgroundFocus);
+		border: 		var(--inputBorderFocus);
+
+		select { color: var(--inputColorFocus); }
+		.svg-icon { background: var(--inputBackgroundFocus); }
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	CUSTOM SELECT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.input-select-custom {
+
+		@extend %absolute-flex;
+		@extend %no-select;
+
+		// reset input dimensions to fit in parent
+		height:			100%;
+		border: 		0;
+
+		display: 		none;
+		align-items: 	center;
+		z-index: 		2;
+
+		p {
+			margin: 0;
+			white-space: nowrap;
+		}
+	}
+
+	// show custom select on mouse devices
+	@include hover() {
+
+		.input-select-custom {
+			display: flex;
+		}
+
+		.input-select select:focus + .input-select-custom {
+			display: none;
+		}
+	}
+
+
+	/////////////////////////////////
+	// POPUP
+	/////////////////////////////////
+
+	.input-select-popup {
+
+		@extend %absolute;
+		@include box-shadow('default');
+
+		top: 		100%;
+		z-index: 	9998;
+		background: var(--inputBackgroundFocus);
+		outline: 	var(--inputBorderFocus);
+		padding: 	10px 10px 15px 10px;
+
+		border-top: var(--inputBorder);
+		border-bottom-right-radius:	var(--inputBorderRadius);
+		border-bottom-left-radius:	var(--inputBorderRadius);
+
+		.scroller {
+			max-height: 	50vh;
+		}
+	}
+
+
+	/////////////////////////////////
+	// OPTION
+	/////////////////////////////////
+
+	.input-select-option {
+
+		@extend %relative;
+
+		margin: 		5px 0;
+		white-space: 	nowrap;
+		overflow: 		hidden;
+		text-overflow: 	ellipsis;
+		outline: 		none;
+		padding-left: 	15px;
+
+		.svg-icon {
+			width: 		12px;
+			background: transparent;
+			left: 		0;
+			right: 		auto;
+			display: 	none;
+		}
+	}
+
+
+	.input-select-option:first-child { margin-top: 0; }
+	.input-select-option:last-child { margin-bottom: 0; }
+
+
+	@include hover() {
+
+		.input-select-option:hover {
+
+			color: var(--inputSelectColorHover);
+		}
+	}
+
+
+	/////////////////////////////////
+	// ACTIVE OPTION
+	/////////////////////////////////
+
+	.input-select-option.active {
+
+		color: var(--inputSelectColor);
+
+		.svg-icon {
+			display: block;
+			fill: var(--inputSelectColor);
+		}
+	}
+
+
+	/////////////////////////////////
+	// OPEN
+	/////////////////////////////////
+
+	.input-select.open {
+
+		background: 	var(--inputBackgroundFocus);
+		border: 		var(--inputBorderFocus);
+
+		&:not(.floating) {
+
+			border-bottom-right-radius:	0;
+			border-bottom-left-radius: 0;
+		}
+
+
+		.input-select-custom .svg-icon {
+			background: var(--inputBackgroundFocus);
+		}
+
+		&:not(.floating) .input-select-custom {
+			z-index: 	9999;
+			background: var(--inputBackgroundFocus);
+			border-bottom-left-radius: 0;
+			border-bottom-right-radius: 0;
+		}
+	}
+
+
+	/////////////////////////////////
+	// FLOATING
+	/////////////////////////////////
+
+	.input-select.open.floating {
+
+		.input-select-popup {
+			border-radius:	var(--inputBorderRadius);
+		}
+	}

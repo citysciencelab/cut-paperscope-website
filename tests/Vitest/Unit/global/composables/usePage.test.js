@@ -1,0 +1,204 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// vue
+	import { mount } from '@vue/test-utils';
+	import { defineComponent, nextTick } from 'vue';
+	import { mockedRouter } from '@tests/Vitest/Helper/Mocks/useRouterMock';
+	import { mockedI18n } from '@tests/Vitest/Helper/Mocks/useI18nMock';
+	import { mockedHead } from '@tests/Vitest/Helper/Mocks/useHeadMock';
+	import { mockedUser } from '@tests/Vitest/Helper/Mocks/useUserMock';
+	import { mockedApi } from '@tests/Vitest/Helper/Mocks/useApiMock';
+
+	// test composable
+	import { usePage } from '@global/composables/usePage'
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	WRAPPER COMPONENT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	const component = defineComponent({
+
+		props: {
+			title: { type:String },
+		},
+
+		template: '<div></div>',
+
+		setup (props) {
+			return { ...usePage(props.title) }
+		}
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	META PROPS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('correct title', () => {
+
+		// act
+		const wrapper = mount(component, {
+			props: { title: 'test title' },
+		});
+
+		// assert
+		expect(wrapper.vm.pageTitle).toBe(window.config.app_name + ' | test title');
+	});
+
+
+	test('missing title', async () => {
+
+		// act
+		const wrapper = mount(component, {
+			props: { title: null },
+		});
+
+		// assert
+		expect(wrapper.vm.pageTitle).toBe(window.config.app_name);
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	PAGE DETAIL
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('call loadPage() automatically if PageDetail.vue', async () => {
+
+		// arrange: mock PageDetail.vue
+		mockedRouter.updateRoute({
+			name:'page.detail', params: {slug: 'test-slug'}
+		});
+
+		// arrange: mock api
+		mockedApi.setCallbackData ({
+			data: 'test content',
+			meta_title: 'new meta title',
+		});
+
+		// act
+		const wrapper = mount(component, {
+			props: { title: 'test title' },
+		});
+		await nextTick();
+
+		// assert
+		expect(wrapper.vm.content.data).toBe('test content');
+		expect(wrapper.vm.pageTitle).toContain(' | new meta title');
+
+		// revert
+		mockedApi.setCallbackData(null);
+	});
+
+
+
+	test('call loadPage() with error if PageDetail.vue', async () => {
+
+		// arrange: mock PageDetail.vue
+		mockedRouter.updateRoute({
+			name:'page.detail', params: {slug: 'test-slug'}
+		});
+
+		// arrange: mock api
+		const apiGet = mockedApi.apiGet;
+		mockedApi.apiGet = function() {
+			return Promise.reject({ response: {status:404} });
+		}
+
+		// act
+		const wrapper = mount(component, {
+			props: { title: 'test title' },
+		});
+		await nextTick();
+
+		// assert
+		expect(mockedRouter.getRoute().name).toBe('error.404');
+
+		// revert
+		mockedApi.apiGet = apiGet;
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	AUTH
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('redirectIfUser() if user is logged in', () => {
+
+		// arrange
+		mockedUser.login();
+
+		// act
+		const wrapper = mount(component, {
+			props: { title: 'test title' },
+		});
+
+		// assert
+		expect(wrapper.vm.redirectIfUser()).toBe(true);
+	});
+
+
+	test('redirectIfUser() if user is not logged in', () => {
+
+		// arrange
+		mockedUser.logout();
+
+		// act
+		const wrapper = mount(component, {
+			props: { title: 'test title' },
+		});
+
+		// assert
+		expect(wrapper.vm.redirectIfUser()).toBe(false);
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	FORM
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('active prevent zooming if form available', async () => {
+
+		vi.useFakeTimers();
+
+		// act
+		const wrapper = mount(defineComponent({
+			template: '<div class="input-text"></div>',
+			setup () { return { ...usePage() } }
+		}));
+		vi.runAllTimers();
+
+		// revert
+		vi.useRealTimers();
+	});
+
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+

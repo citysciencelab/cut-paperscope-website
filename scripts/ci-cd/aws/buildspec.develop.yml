@@ -1,0 +1,48 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      # install dependencies
+      - npx browserslist@latest --yes --update-db
+      - npm install
+      - npm audit fix
+      - composer install
+
+      # create .env files
+      - cp .env.example .env
+      - cp .env.testing.example .env.testing
+
+      # add trailing "/" to APP URL and MIX_URL
+      - appUrl=$APP_URL"/"
+      - appUrl="$(sed -E 's/\/\/$/\//g' <<<$appUrl)"
+
+      # update APP_URL in .env
+      - appUrl="$(sed -E 's/\//\\\//g' <<<$appUrl)"
+      - sed -i "/^APP_URL/ s/=.*/=\"$appUrl\"/" .env
+
+      # add root passwords
+      - sed -i "/^ROOT_PASSWORD/ s/=.*/=\"$ROOT_PASSWORD\"/" .env
+      - sed -i "/^ROOT_PASSWORD/ s/=.*/=\"$ROOT_PASSWORD\"/" .env.testing
+
+  build:
+    commands:
+      # compile javascript
+      - npm run production
+
+      # init laravel appå
+      - php artisan key:generate
+      - php artisan key:generate --env=testing
+      - php artisan storage:link
+      - php artisan migrate:fresh --seed
+
+  post_build:
+    commands:
+      # remove unnecessary assets
+      - rm -rf node_modules
+      - rm -rf _assets
+
+artifacts:
+  files:
+    - '**/*'
+

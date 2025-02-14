@@ -1,0 +1,453 @@
+{
+  "debugbar.openhandler": {
+    "name": "debugbar.openhandler",
+    "domain": null,
+    "action": "Barryvdh\\Debugbar\\Controllers\\OpenHandlerController@handle",
+    "uri": "_debugbar/open",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "debugbar.clockwork": {
+    "name": "debugbar.clockwork",
+    "domain": null,
+    "action": "Barryvdh\\Debugbar\\Controllers\\OpenHandlerController@clockwork",
+    "uri": "_debugbar/clockwork/{id}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "debugbar.assets.css": {
+    "name": "debugbar.assets.css",
+    "domain": null,
+    "action": "Barryvdh\\Debugbar\\Controllers\\AssetController@css",
+    "uri": "_debugbar/assets/stylesheets",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "debugbar.assets.js": {
+    "name": "debugbar.assets.js",
+    "domain": null,
+    "action": "Barryvdh\\Debugbar\\Controllers\\AssetController@js",
+    "uri": "_debugbar/assets/javascript",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "debugbar.cache.delete": {
+    "name": "debugbar.cache.delete",
+    "domain": null,
+    "action": "Barryvdh\\Debugbar\\Controllers\\CacheController@delete",
+    "uri": "_debugbar/cache/{key}/{tags?}",
+    "method": [
+      "DELETE"
+    ]
+  },
+  "ignition.healthCheck": {
+    "name": "ignition.healthCheck",
+    "domain": null,
+    "action": "Facade\\Ignition\\Http\\Controllers\\HealthCheckController",
+    "uri": "_ignition/health-check",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "ignition.executeSolution": {
+    "name": "ignition.executeSolution",
+    "domain": null,
+    "action": "Facade\\Ignition\\Http\\Controllers\\ExecuteSolutionController",
+    "uri": "_ignition/execute-solution",
+    "method": [
+      "POST"
+    ]
+  },
+  "ignition.shareReport": {
+    "name": "ignition.shareReport",
+    "domain": null,
+    "action": "Facade\\Ignition\\Http\\Controllers\\ShareReportController",
+    "uri": "_ignition/share-report",
+    "method": [
+      "POST"
+    ]
+  },
+  "ignition.scripts": {
+    "name": "ignition.scripts",
+    "domain": null,
+    "action": "Facade\\Ignition\\Http\\Controllers\\ScriptController",
+    "uri": "_ignition/scripts/{script}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "ignition.styles": {
+    "name": "ignition.styles",
+    "domain": null,
+    "action": "Facade\\Ignition\\Http\\Controllers\\StyleController",
+    "uri": "_ignition/styles/{style}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "cypress.factory": {
+    "name": "cypress.factory",
+    "domain": null,
+    "action": "Laracasts\\Cypress\\Controllers\\CypressController@factory",
+    "uri": "__cypress__/factory",
+    "method": [
+      "POST"
+    ]
+  },
+  "cypress.login": {
+    "name": "cypress.login",
+    "domain": null,
+    "action": "Laracasts\\Cypress\\Controllers\\CypressController@login",
+    "uri": "__cypress__/login",
+    "method": [
+      "POST"
+    ]
+  },
+  "cypress.logout": {
+    "name": "cypress.logout",
+    "domain": null,
+    "action": "Laracasts\\Cypress\\Controllers\\CypressController@logout",
+    "uri": "__cypress__/logout",
+    "method": [
+      "POST"
+    ]
+  },
+  "cypress.artisan": {
+    "name": "cypress.artisan",
+    "domain": null,
+    "action": "Laracasts\\Cypress\\Controllers\\CypressController@artisan",
+    "uri": "__cypress__/artisan",
+    "method": [
+      "POST"
+    ]
+  },
+  "cypress.run-php": {
+    "name": "cypress.run-php",
+    "domain": null,
+    "action": "Laracasts\\Cypress\\Controllers\\CypressController@runPhp",
+    "uri": "__cypress__/run-php",
+    "method": [
+      "POST"
+    ]
+  },
+  "cypress.csrf-token": {
+    "name": "cypress.csrf-token",
+    "domain": null,
+    "action": "Laracasts\\Cypress\\Controllers\\CypressController@csrfToken",
+    "uri": "__cypress__/csrf_token",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "cypress.routes": {
+    "name": "cypress.routes",
+    "domain": null,
+    "action": "Laracasts\\Cypress\\Controllers\\CypressController@routes",
+    "uri": "__cypress__/routes",
+    "method": [
+      "POST"
+    ]
+  },
+  "cashier.payment": {
+    "name": "cashier.payment",
+    "domain": null,
+    "action": "Laravel\\Cashier\\Http\\Controllers\\PaymentController@show",
+    "uri": "stripe/payment/{id}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "cashier.webhook": {
+    "name": "cashier.webhook",
+    "domain": null,
+    "action": "Laravel\\Cashier\\Http\\Controllers\\WebhookController@handleWebhook",
+    "uri": "stripe/webhook",
+    "method": [
+      "POST"
+    ]
+  },
+  "": {
+    "name": null,
+    "domain": null,
+    "action": "Closure",
+    "uri": "debug-slack",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "logout": {
+    "name": "logout",
+    "domain": null,
+    "action": "Laravel\\Fortify\\Http\\Controllers\\AuthenticatedSessionController@destroy",
+    "uri": "auth/logout",
+    "method": [
+      "POST"
+    ]
+  },
+  "password.email": {
+    "name": "password.email",
+    "domain": null,
+    "action": "Laravel\\Fortify\\Http\\Controllers\\PasswordResetLinkController@store",
+    "uri": "auth/forgot-password",
+    "method": [
+      "POST"
+    ]
+  },
+  "password.update": {
+    "name": "password.update",
+    "domain": null,
+    "action": "Laravel\\Fortify\\Http\\Controllers\\NewPasswordController@store",
+    "uri": "auth/reset-password",
+    "method": [
+      "POST"
+    ]
+  },
+  "verification.verify": {
+    "name": "verification.verify",
+    "domain": null,
+    "action": "Laravel\\Fortify\\Http\\Controllers\\VerifyEmailController@__invoke",
+    "uri": "auth/email/verify/{id}/{hash}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "verification.send": {
+    "name": "verification.send",
+    "domain": null,
+    "action": "Laravel\\Fortify\\Http\\Controllers\\EmailVerificationNotificationController@store",
+    "uri": "auth/email/verification-notification",
+    "method": [
+      "POST"
+    ]
+  },
+  "password.confirmation": {
+    "name": "password.confirmation",
+    "domain": null,
+    "action": "Laravel\\Fortify\\Http\\Controllers\\ConfirmedPasswordStatusController@show",
+    "uri": "auth/user/confirmed-password-status",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.content": {
+    "name": "api.content",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ContentController@get",
+    "uri": "api/content",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.project.list": {
+    "name": "api.project.list",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ProjectController@getPublicList",
+    "uri": "api/project",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.project": {
+    "name": "api.project",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ProjectController@getPublic",
+    "uri": "api/project/{slug}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.item.list": {
+    "name": "api.item.list",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ItemController@getPublicList",
+    "uri": "api/item",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.item": {
+    "name": "api.item",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ItemController@getPublic",
+    "uri": "api/item/{slug}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.product.list": {
+    "name": "api.product.list",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ProductController@getPublicList",
+    "uri": "api/product",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.product": {
+    "name": "api.product",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ProductController@getPublic",
+    "uri": "api/product/{slug}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.product.paid": {
+    "name": "api.product.paid",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\ProductController@getPaid",
+    "uri": "api/product/{id}/paid",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.user": {
+    "name": "api.user",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Auth\\UserController@get",
+    "uri": "api/user",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "api.user.save": {
+    "name": "api.user.save",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Auth\\UserController@save",
+    "uri": "api/user/save",
+    "method": [
+      "POST"
+    ]
+  },
+  "api.user.delete": {
+    "name": "api.user.delete",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Auth\\UserController@delete",
+    "uri": "api/user/delete",
+    "method": [
+      "POST"
+    ]
+  },
+  "api.user.password": {
+    "name": "api.user.password",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Auth\\UserController@updatePassword",
+    "uri": "api/user/password",
+    "method": [
+      "POST"
+    ]
+  },
+  "api.user.image": {
+    "name": "api.user.image",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Auth\\UserController@updateImage",
+    "uri": "api/user/image",
+    "method": [
+      "POST"
+    ]
+  },
+  "api.user.image.delete": {
+    "name": "api.user.image.delete",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Auth\\UserController@deleteImage",
+    "uri": "api/user/image/delete",
+    "method": [
+      "POST"
+    ]
+  },
+  "backend": {
+    "name": "backend",
+    "domain": null,
+    "action": "Closure",
+    "uri": "backend/{vue_capture?}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "index": {
+    "name": "index",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\AppController@showIndex",
+    "uri": "/",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "login": {
+    "name": "login",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\AppController@showIndex",
+    "uri": "login",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "stripe.checkout": {
+    "name": "stripe.checkout",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Shop\\StripeController@checkout",
+    "uri": "stripe/checkout/{type}/{id}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "stripe.checkout.success": {
+    "name": "stripe.checkout.success",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Shop\\StripeController@checkoutSuccess",
+    "uri": "stripe/checkout/success/{type}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "asset.protected": {
+    "name": "asset.protected",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\Auth\\UserController@getPrivateAsset",
+    "uri": "asset/{type}/{value}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  },
+  "index.vue": {
+    "name": "index.vue",
+    "domain": null,
+    "action": "App\\Http\\Controllers\\App\\AppController@showIndex",
+    "uri": "{vue_capture?}",
+    "method": [
+      "GET",
+      "HEAD"
+    ]
+  }
+}

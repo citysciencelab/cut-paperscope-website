@@ -1,0 +1,158 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	require('dotenv').config();
+
+	import { config } from '@vue/test-utils'
+	import plugins from './vitest.plugins.js';
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	LARAVEL CONFIG
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	window.config = {
+
+		app_name: process.env.APP_NAME,
+		webContext: 'app',
+
+		active_locale: 'de',
+		available_locales: ['de','en'],
+		fallback_locale: 'de',
+
+		base_url: process.env.APP_URL,
+		base_path: (new URL(process.env.APP_URL)).pathname,
+
+		storage_default: 'public',
+		storage_url_public: process.env.APP_URL + 'storage/',
+		storage_url_s3: 'https://' + process.env.AWS_BUCKET + '.s3.' + process.env.AWS_DEFAULT_REGION + '.amazonaws.com/',
+
+		cookie_enabled: process.env.COOKIE_CONSENT_ENABLED,
+		cookie_name: 'confirmed_cookie',
+		cookie_categories: ['analytics','marketing'],
+		cookie_expire: 365 * 20,
+		cookie_domain: (new URL(process.env.APP_URL)).hostname,
+		cookie_path: (new URL(process.env.APP_URL)).pathname,
+
+		hash: '26f78d9b54d98e0a',
+	};
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	AXIOS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	window.axios =  {
+
+		get: (route,config) => Promise.resolve({
+			status: 200,
+			data: { status:'success', data: {route,config} }
+		}),
+
+		post: (route,data,config) => Promise.resolve({
+			status: 200,
+			data: { status:'success', data: {params:data,route,config} }
+		}),
+	};
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	UMBRELLA JS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	window.u = (query) => ({
+		nodes: document.querySelector(query) ?? [],
+		first: () => this.nodes ? this.nodes[0] : null,
+		last: () => this.nodes ? this.nodes[nodes.length - 1] : null,
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	GLOBAL VUE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/////////////////////////////////
+	// MOCKS
+	/////////////////////////////////
+
+	config.global.mocks = {
+
+		// methods
+		t:(msg) => msg,
+		link: (name, params = {}, query = {}, props = {}) => ({ name, params, query, props }),
+
+		// urls and paths
+		baseUrl: 			window.config.base_url.startsWith('//localhost') ? 'http:'+window.config.base_url : window.config.base_url,
+		storageUrlPublic: 	window.config.storage_url_public,
+		storageUrlS3: 		window.config.storage_url_s3,
+
+		// state
+		isLocal: 			window.config.base_url.includes('localhost'),
+		webContext: 		'app',
+
+		// vite env variables
+		"import.meta.env": {
+			VITE_FEATURE_APP_ACCOUNTS: 'true',
+		},
+	};
+
+
+	/////////////////////////////////
+	// DIRECTIVES
+	/////////////////////////////////
+
+	config.global.directives = {
+
+		Fade: {
+			mounted(el, binding) {el.style.opacity = binding.value ? 1 : 0; },
+			updated(el, binding) { el.style.opacity = binding.value ? 1 : 0; }
+		},
+	};
+
+
+	/////////////////////////////////
+	// PLUGINS
+	/////////////////////////////////
+
+	config.global.plugins = plugins;
+
+
+	/////////////////////////////////
+	// GLOBAL COMPONENTS
+	/////////////////////////////////
+
+	config.global.components = {
+
+		Btn: {
+			template: '<button data-stub="btn" :label="label" :to="to" :href="href"></button>',
+			props: ['label','to','href'],
+		},
+		RouterLink: {
+			template: '<a data-stub="router-link" :href="to.name??to.path"><slot></slot></a>',
+			props: ['to'],
+		},
+		SvgItem: {
+			template: '<span data-stub="svg-item" :data-icon="icon" :data-sprite="sprite" :data-inline="inline"></span>',
+			props: ['icon','sprite','inline'],
+		},
+	};

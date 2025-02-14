@@ -1,0 +1,104 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	PROJECT NAVI
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$paddingBottom: 25px;
+
+	.project-navi {
+
+		@extend %fixed;
+
+		width: var(--projectNaviWidth);
+		top: var(--headerHeight);
+		left: 0;
+		height: calc($vh100 - var(--headerHeight));
+		padding-left: var(--pagePadding);
+		padding-bottom: $paddingBottom + 52px + 20px;
+	}
+
+	.project-navi .scroller {
+
+		height: 100%;
+	}
+
+	.project-navi-content {
+
+		@extend %relative;
+	}
+
+
+	/////////////////////////////////
+	// BUTTONS
+	/////////////////////////////////
+
+	.project-navi .btn {
+
+		width: 100%;
+		margin-left: 0;
+		margin-right: 0;
+		padding-left: 10px !important;
+		padding-right: 10px !important;
+	}
+
+
+	.project-navi-save {
+
+		margin-top: 20%;
+	}
+
+	.project-navi .btn.delete {
+
+		background: $colorError;
+	}
+
+
+	/////////////////////////////////
+	// USER
+	/////////////////////////////////
+
+	.project-navi .user-image {
+
+		width: 52px;
+		height: 52px;
+		position: absolute;
+		left: var(--pagePadding);
+		top: auto;
+		bottom: $paddingBottom;
+	}
+
+
+	/////////////////////////////////
+	// LOGOUT
+	/////////////////////////////////
+
+	.btn.project-navi-logout {
+
+		width: 80px;
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+		position: absolute;
+		left: calc(var(--pagePadding) + 52px + 4px);
+		top: auto;
+		bottom: $paddingBottom + 9px;
+		margin: 0;
+		background: #fff !important;
+		color: $colorPsBlue;
+
+		.svg-icon {
+			fill: $colorPsBlue;
+		}
+	}
+
+	@include hover() {
+
+		.btn.project-navi-logout:hover {
+			color: $colorPsBlueDark;
+			.svg-icon { fill: $colorPsBlueDark; }
+		}
+
+	}
+
+

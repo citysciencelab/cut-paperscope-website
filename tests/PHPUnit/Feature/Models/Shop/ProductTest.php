@@ -1,0 +1,148 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace Tests\PHPUnit\Feature\Models\Shop;
+
+	// Laravel
+	use Tests\PHPUnit\TestCase;
+	use Illuminate\Foundation\Testing\RefreshDatabase;
+	use Illuminate\Support\Facades\Schema;
+
+	// Models
+	use App\Models\Shop\Product;
+	use App\Models\App\Base\Fragment;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    CLASS DECLARATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+class ProductTest extends TestCase {
+
+	use RefreshDatabase;
+
+
+	protected function setUp(): void {
+
+		parent::setUp();
+		$this->skipIfNoShop();
+    }
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    SCHEMA
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function test_database_has_expected_columns() {
+
+		$this->assertTrue(
+		  Schema::hasColumns('products', [
+			...$this->getBaseProps(),
+			...$this->getPublishedProps(),
+			...$this->getStripeProps(),
+
+			$this->translateProp('title'),
+			$this->translateProp('teaser_description'),
+			$this->translateProp('teaser_image'),
+			$this->translateProp('content'),
+		]), 1);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    PERMISSIONS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function test_existing_permissions_for_item() {
+
+		// arrange
+		$this->seed();
+
+		// assert
+		$this->assertDatabaseHas('permissions', ['name' => 'create products']);
+		$this->assertDatabaseHas('permissions', ['name' => 'edit products']);
+		$this->assertDatabaseHas('permissions', ['name' => 'delete products']);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    FRAGMENT RELATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function test_has_public_fragment_relation() {
+
+		// arrange
+		$fragment = Fragment::factory()->public();
+ 		$product = Product::factory()->public()->has($fragment)->create();
+
+		// add relation to model
+		$this->assertCount(1, $product->fragments);
+		$firstFragment = $product->fragments->first();
+		$this->assertEquals($firstFragment->order, 0);
+
+		// act: delete model
+		$deleted = $product->delete();
+
+		// assert: relation deleted
+		$this->assertTrue($deleted);
+		$this->assertDatabaseMissing('fragments', ['id' => $firstFragment->id]);
+	}
+
+
+	public function test_has_no_public_fragment_relation() {
+
+		// arrange
+ 		$product = Product::factory()->public()->create();
+		Fragment::factory()->public()->create(['parent_id' => $product->id, 'parent_type' => Product::class]);
+		Fragment::factory()->create(['public'=>false, 'parent_id' => $product->id, 'parent_type' => Product::class]);
+
+		// act
+		$product->load('fragments');
+
+		// assert
+		$this->assertCount(1, $product->fragments);
+	}
+
+
+	public function test_has_fragment_relation_in_backend() {
+
+		// arrange
+		$this->loginAsAdmin();
+ 		$product = Product::factory()->public()->create();
+		Fragment::factory()->public()->create(['parent_id' => $product->id, 'parent_type' => Product::class]);
+		Fragment::factory()->create(['public'=>false, 'parent_id' => $product->id, 'parent_type' => Product::class]);
+
+		// act
+		request()->headers->set('x-context', 'backend');
+		$product->load('fragments');
+
+		// assert
+		$this->assertCount(2, $product->fragments);
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+} // end class

@@ -1,0 +1,85 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SCROLLER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.scroller {
+
+		@extend %relative;
+		max-height: 100%;
+	}
+
+
+	// bugfix: hide native scrollbar under simplebar
+	.simplebar-content-wrapper::-webkit-scrollbar { display: none; }
+
+
+	/////////////////////////////////
+	// SIMPLEBAR CONTENT
+	/////////////////////////////////
+
+	// only when scrollbar is visible
+	.scroller.simplebar-scrollable-y .simplebar-content {
+
+		padding-right: 	15px !important;
+	}
+
+
+	/////////////////////////////////
+	// SIMPLEBAR TRACK
+	/////////////////////////////////
+
+	.scroller .simplebar-track.simplebar-vertical {
+
+		background: 	var(--scrollerTrackColor);
+		width: 			var(--scrollerWidth);
+		border-radius: 	calc(var(--scrollerWidth) * 0.5);
+		right: 			0px;
+	}
+
+
+	/////////////////////////////////
+	// SIMPELBAR SCROLLER
+	/////////////////////////////////
+
+	.scroller .simplebar-scrollbar.simplebar-visible {
+
+		border-radius: 	calc(var(--scrollerWidth) * 0.5);
+
+		&::before {
+
+			background-color: var(--scrollerColor);
+			opacity: 1;
+			transition: background-color 0.2s ease;
+
+			// no padding to to track
+			top: 		0;
+			left: 		0;
+			bottom: 	0;
+			right: 		0;
+		}
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	.scroller.simplebar-scrollable-y.simplebar-dragging,
+	.scroller .simplebar-track.simplebar-vertical.simplebar-hover {
+
+		.simplebar-scrollbar,
+		.simplebar-scrollbar.simplebar-visible {
+
+			&::before {
+				background-color: var(--scrollerColorHover);
+			}
+		}
+	}
+
+	.simplebar-content-wrapper:focus-visible {
+
+		outline-color: var(--colorLinkFocus);
+	}

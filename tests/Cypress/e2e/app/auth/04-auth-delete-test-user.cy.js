@@ -1,0 +1,80 @@
+/// <reference types="cypress" />
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	TESTS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+describe('Delete user account', () => {
+
+	var slurpAddress = '';
+
+
+	before(() => {
+
+		cy.task('setTestingEnv')
+		cy.task('getSharedData', 'slurpAddress').then(addr => slurpAddress = addr);
+	});
+
+
+	after(() => cy.task('removeTestingEnv'));
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	DELETE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	it('go to user settings and delete user',{defaultCommandTimeout: 120*1000},()=>{
+
+		// arrange: login user
+		if(slurpAddress) {
+			cy.appLogin(slurpAddress, "HN-newPassword123");
+		}
+		else {
+			cy.refreshDatabase();
+			cy.appLogin();
+		}
+
+		// arrange: visit user settings
+		cy.wait(3000);
+		cy.visit("/user/edit");
+		cy.wait(2000); // wait for async components
+		cy.url().should('include', '/user/edit');
+
+		// act
+		cy.get('#input-name').should('exist');
+		cy.get('.btn-delete').click();
+		cy.get('.popup.modal .btn-confirm').click();
+		cy.wait(3000);
+
+		// assert: redirect to index
+		cy.url().should('eq', Cypress.config('baseUrl') );
+	});
+
+
+	it('unable to login after deletion',()=>{
+
+		// act
+		if(slurpAddress) {
+			cy.appLogin(slurpAddress, "HN-newPassword123");
+		}
+		else {
+			cy.appLogin(Cypress.env('ROOT_EMAIL'), Cypress.env('ROOT_PASSWORD'));
+		}
+
+		// assert
+		cy.wait(3000);
+		cy.get('p.error').should('to.exist');
+	})
+
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+})

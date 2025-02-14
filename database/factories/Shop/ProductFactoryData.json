@@ -1,0 +1,23 @@
+{
+	"data": [
+		{
+			"id": "b9e932a0-a4f5-488a-8d1d-2f3824b1c704",
+			"name": "Super Mario Bros.",
+			"slug": "super-mario-bros",
+			"title_de": "Super Mario Bros",
+			"public": true,
+			"published_start": "2022-02-01 12:00:00",
+			"teaser_description_de": "<p>Super Mario Bros ist ein Jump'n'Run-Videospiel, das von Nintendo entwickelt und veröffentlicht wurde.<\/p>",
+			"teaser_image_de": "https://via.placeholder.com/800x600.jpg",
+			"content_de": "<p>Paid content of Super Mario Bros</p>",
+
+			"stripe_id": "prod_NqBdNmWkf3Zlfy",
+			"stripe_synced": true,
+			"stripe_name": "Super Mario Bros",
+			"stripe_description": "Kurzbeschreibung von Stripe",
+			"stripe_price_id": "price_1N4VGSBGopzL0yrKkZsLeiIo",
+			"stripe_price_value": "19,99 €",
+			"stripe_price_amount": "1999"
+		}
+	]
+}

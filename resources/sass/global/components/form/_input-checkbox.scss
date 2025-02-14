@@ -1,0 +1,145 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INPUT SELECT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.input-checkbox,
+	.input-radio {
+
+		@extend %relative-inline-block;
+
+		cursor: 		pointer;
+		margin-right: 	15px;
+
+		// overwrite default form styling
+		height: 		auto;
+		min-height: 	calc(var(--inputHeight) * 0.8);
+		border: 		0;
+		background: 	transparent;
+	}
+
+
+	// hide default element
+	.input-checkbox  input[type=checkbox],
+	.input-radio     input[type=radio] {
+
+		@extend %absolute;
+
+		width: 		0;
+		height: 	100%;
+		opacity: 	0;
+	}
+
+
+	/////////////////////////////////
+	// LABEL
+	/////////////////////////////////
+
+	.input-checkbox label,
+	.input-radio label {
+
+		@extend %relative;
+		@extend %no-select;
+
+		top: 			calc(var(--inputHeight) * 0.15);
+		cursor: 		pointer;
+		padding-left: 	calc(var(--inputHeight) * 0.6 + 7px);
+		z-index: 		2;											// render label on top of icon to trigger input element
+
+		.textlink {	font: inherit; }
+	}
+
+
+	/////////////////////////////////
+	// ICON
+	/////////////////////////////////
+
+	.input-checkbox-icon,
+	.input-radio-icon {
+
+		@extend %absolute;
+
+		top: 			calc(var(--inputHeight) * 0.15);
+		width: 			calc(var(--inputHeight) * 0.6);
+		height: 		calc(var(--inputHeight) * 0.6);
+
+		// styling as input element
+		border-radius: 	var(--inputBorderRadius);
+		border: 		var(--inputBorder);
+		background: 	var(--inputBackground);
+
+		.svg-icon {
+
+			@extend %center-absolute;
+
+			width: 		0;
+			height: 	0;
+			transition: all 0.26s ease;
+		}
+	}
+
+
+	.input-radio-icon {
+
+		border-radius: 	50%;
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	@include hover() {
+
+		.input-checkbox:hover,
+		.input-radio:hover {
+
+			label {
+				color: var(--iconCheckboxColor);
+			}
+
+			.svg-icon {
+				width: 		100%;
+				height: 	100%;
+				fill: 		var(--iconCheckboxColor);
+			}
+		}
+	}
+
+
+	.input-checkbox input:focus-visible,
+	.input-radio input:focus-visible {
+
+		& + label {
+			outline: 2px solid var(--colorLinkFocus);
+		}
+	}
+
+
+	/////////////////////////////////
+	// FOCUS
+	/////////////////////////////////
+
+	.input-checkbox input[type=checkbox]:focus + label {
+
+		color: var(--iconCheckboxColor);
+	}
+
+
+	/////////////////////////////////
+	// ACTIVE
+	/////////////////////////////////
+
+	.input-checkbox input[type=checkbox]:checked + label + .input-checkbox-icon,
+	.input-radio input[type=radio]:checked + label + .input-radio-icon {
+
+		.svg-icon {
+			width: 		100%;
+			height: 	100%;
+			opacity: 	1;
+			fill: 		var(--iconCheckboxColor)
+		}
+	}
+

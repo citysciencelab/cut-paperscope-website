@@ -1,0 +1,109 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace App\Providers;
+
+	// Laravel
+	use Illuminate\Support\ServiceProvider;
+	use Illuminate\Support\Facades\Event;
+	use Illuminate\Support\Facades\Validator;
+	use Illuminate\Support\Facades\RateLimiter;
+	use Illuminate\Cache\RateLimiting\Limit;
+	use Illuminate\Http\Request;
+	use Laravel\Cashier\Cashier;
+	use Laravel\Sanctum\Sanctum;
+
+	// App
+	use App\Models\Auth\User;
+	use App\Models\Shop\Subscription;
+	use App\Models\Auth\PersonalAccessToken;
+	use App\Http\Validators\FileExtensionValidator;
+	use App\Http\Validators\DomainValidator;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    CLASS CONSTRUCT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+class AppServiceProvider extends ServiceProvider
+{
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    REGISTER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// Register any application services.
+	public function register(): void {
+
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  BOOT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// Bootstrap any application services.
+	public function boot(): void {
+
+		// custom validation rules
+		Validator::extend('file_extension', FileExtensionValidator::class);
+		Validator::extend('domain', DomainValidator::class);
+
+		// custom login request for auth
+		$this->app->bind('Laravel\Fortify\Http\Requests\LoginRequest', \App\Http\Requests\Auth\LoginRequest::class);
+
+		// custom stripe classes
+		Cashier::useCustomerModel(User::class);
+		Cashier::useSubscriptionModel(Subscription::class);
+
+		// custom model for uuid in sanctum
+		Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
+		// additionl socialite driver
+		Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
+			$event->extendSocialite('apple', \SocialiteProviders\Apple\Provider::class);
+		});
+
+		// support subfolder for migrations
+		$migrationsPath = database_path('migrations');
+		$directories    = glob($migrationsPath.'/base/*', GLOB_ONLYDIR);
+		$paths          = array_merge([$migrationsPath], $directories);
+		$this->loadMigrationsFrom($paths);
+
+		// @codeCoverageIgnoreStart
+		// rate limiter for routes
+		RateLimiter::for('api', function (Request $request) {
+			return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+		});
+
+		RateLimiter::for('critical', function (Request $request) {
+			return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
+		});
+		// @codeCoverageIgnoreEnd
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+
+} // end class

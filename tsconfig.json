@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+   "paths": {
+	 "@public/*": ["./public/*"],
+	 "@resources/*": ["./resources/*"],
+	 "@app/*": ["./resources/js/app/*"],
+	 "@backend/*": ["./resources/js/backend/*"],
+	 "@global/*": ["./resources/js/global/*"],
+	 "@tests/*": ["./tests/*"],
+	 "@vendor/*": ["./vendor/*"],
+	 "@node_modules/*": ["./node_modules/*"]
+	}
+  }
+}

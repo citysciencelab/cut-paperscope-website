@@ -1,0 +1,88 @@
+<?php
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	namespace App\Notifications;
+
+	// Laravel
+	use Illuminate\Bus\Queueable;
+	use Illuminate\Contracts\Queue\ShouldQueue;
+	use Illuminate\Notifications\Messages\MailMessage;
+	use Illuminate\Auth\Notifications\ResetPassword;
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    CLASS DECLARATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+class PasswordResetNotification extends ResetPassword implements ShouldQueue
+{
+	// Traits
+	use Queueable;
+
+	public $locale;
+
+	public function __construct($token, $locale) {
+
+		$this->token = $token;
+		$this->locale = $locale;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    NOTIFICATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function via($notifiable) {
+
+		return ['mail'];
+	}
+
+
+	public function toMail($notifiable) {
+
+		app()->setLocale($this->locale);
+
+		// skip if sso user
+		if(!empty($notifiable->sso_driver)) {
+
+			return ( new MailMessage)
+			->greeting(trans('notification.greeting') . ' ' . $notifiable->name)
+				->subject(trans('notification.reset-subject'))
+				->line(trans('notification.reset-text'))
+				->line(trans('notification.reset-text-sso', ['driver' => ucfirst($notifiable->sso_driver)]))
+				->line(trans('notification.reset-wrong'))
+				->salutation(trans('notification.salutation'));
+		}
+
+
+		$link = url( "/".config('fortify.password-reset')."/?token=" . $this->token . '&email=' . $notifiable->email);
+
+		return ( new MailMessage )
+			->greeting(trans('notification.greeting') . ' ' . $notifiable->name)
+			->subject(trans('notification.reset-subject'))
+			->line(trans('notification.reset-text'))
+			->action(trans('notification.reset-button'), $link)
+			->line(trans('notification.reset-expire', ['minutes' => config('auth.passwords.users.expire')] ))
+			->line(trans('notification.reset-wrong'))
+			->salutation(trans('notification.salutation'));
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+}

@@ -1,0 +1,151 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	INCLUDES
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	// test composable
+	import { useConfig } from '@global/composables/useConfig'
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	URL / PATHS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('correct base url in local build', async () => {
+
+		// arrange
+		window.config.base_url = '//localhost:3000';
+
+		// act
+		const {baseUrl} = useConfig();
+
+		// assert
+		expect(baseUrl).toBe('http://localhost:3000');
+	});
+
+
+	test('correct base url in production build', async () => {
+
+		// arrange
+		window.config.base_url = process.env.APP_URL;
+
+		// act
+		const {baseUrl} = useConfig();
+
+		// assert
+		expect(baseUrl).toBe(process.env.APP_URL);
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	STORAGE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	/*test('correct url for public storage', async () => {
+
+		// act
+		const {storageUrlPublic} = useConfig();
+
+		// assert
+		expect(storageUrlPublic).toContain('/public/storage/');
+	});*/
+
+
+	test('correct url for s3 storage', async () => {
+
+		// act
+		const {storageUrlS3} = useConfig();
+
+		// assert
+		expect(storageUrlS3).toContain('.amazonaws.com/');
+	});
+
+
+	test('add public storage url to path', async () => {
+
+		// act
+		const {storageUrlPublic, setStorageUrl} = useConfig();
+		const url = setStorageUrl('public', 'test/path/file.jpg');
+
+		// assert
+		expect(url).toBe(storageUrlPublic+'test/path/file.jpg');
+	});
+
+
+	test('add s3 storage url to path', async () => {
+
+		// act
+		const {storageUrlS3, setStorageUrl} = useConfig();
+		const url = setStorageUrl('s3', '/test/path/file.jpg');
+
+		// assert
+		expect(url).toBe(storageUrlS3+'test/path/file.jpg');
+	});
+
+
+	test('add storage url to path with missing driver', async () => {
+
+		// act
+		const {setStorageUrl} = useConfig();
+		const url = setStorageUrl('missing-driver', '/test/path/file.jpg');
+
+		// assert
+		expect(url).toBe('test/path/file.jpg');
+	});
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MISC
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	test('isLocal is true on local build', async () => {
+
+		// act
+		const {isLocal} = useConfig();
+
+		// assert
+		expect(isLocal).toBe(true);
+	});
+
+
+	test('isLocal is false on production build', async () => {
+
+		// arrange
+		window.config.base_url = 'https://www.hello-nasty.com/';
+
+		// act
+		const {isLocal} = useConfig();
+
+		// assert
+		expect(isLocal).toBe(false);
+	});
+
+
+	test('hash is correct', async () => {
+
+		// act
+		const {hash} = useConfig();
+
+		// assert
+		expect(hash).not.toBe(null);
+	});
+
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+

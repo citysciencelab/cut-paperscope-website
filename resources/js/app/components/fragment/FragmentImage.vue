@@ -1,0 +1,58 @@
+<!--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    HTML
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+
+
+	<template>
+
+		<div class="fragment-image" :data-id="fragment.id">
+
+			<h2 v-if="fragment.content.title">{{ fragment.content.title }}</h2>
+
+			<component
+				:is="hasUrl? (hasExternalUrl?'a':'router-link'):'div'"
+				:href="fragment.content.image_url"
+				:target="hasExternalUrl?'_blank':null"
+				:to="hasUrl && !hasExternalUrl ? link({path:fragment.content.image_url}) : null"
+				:rel="hasExternalUrl?'noopener noreferrer':null"
+			>
+				<lazy-picture v-if="fragment.content.image" :file="fragment.content.image" :alt="fragment.content.image_alt"/>
+			</component>
+
+			<p v-if="fragment.content.image_subline">{{ fragment.content.image_subline }}</p>
+
+		</div>
+
+	</template>
+
+
+
+<!--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//    JAVASCRIPT
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////-->
+
+
+	<script setup>
+
+		import { computed } from 'vue';
+
+
+		/////////////////////////////////
+		// INIT
+		/////////////////////////////////
+
+		const props = defineProps({
+			fragment: { type: Object, required: true }
+		});
+
+		const hasUrl = computed(() => props.fragment.content.image_url ? true : false);
+		const hasExternalUrl = computed(() => props.fragment.content.image_url?.includes('http'));
+
+
+	</script>
+
+

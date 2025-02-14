@@ -1,0 +1,172 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	PAGE TUTORIAL
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.tutorial {
+
+		@extend %fixed;
+
+		z-index: 99999;
+		height: 100%;
+		background: #F8F8F8;
+
+		// overwrite with Hello Nasty CD
+		h1,h2,h3, p {
+			color: #2B2D31;
+			font-family: 'NeuePlak', sans-serif;
+			text-wrap: balance;
+		}
+		h1,h2,h3 {
+			font-weight: 900;
+			text-transform: uppercase;
+		}
+
+		p strong, p b {
+			font-weight: 900;
+		}
+
+		p strong {
+			color: #0055FF;
+		}
+	}
+
+
+	/////////////////////////////////
+	// FULLSCREEN
+	/////////////////////////////////
+
+	.tutorial-fullscreen-btn {
+
+		@extend %absolute;
+
+		left: 		auto;
+		top: 		1vw;
+		right: 		1vw;
+		margin: 	0;
+		z-index: 	2;
+	}
+
+
+	/////////////////////////////////
+	// CHART
+	/////////////////////////////////
+
+	.tutorial > div {
+
+		@extend %absolute-flex;
+
+		height: 100%;
+		align-items: center;
+		background: #F8F8F8;
+		display: none;
+		opacity: 0;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	TUTORIAL CHARTS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$chartPadding: min(7vw,200px);
+
+
+	/////////////////////////////////
+	// COVER
+	/////////////////////////////////
+
+	.tutorial-chart-cover {
+
+		padding-left: $chartPadding;
+	}
+
+
+	/////////////////////////////////
+	// TABLE OF CONTENT
+	/////////////////////////////////
+
+	.tutorial-chart-toc {
+
+		padding: 0 $chartPadding;
+		justify-content: space-between;;
+
+		.col-50 {
+			width: calc(50% - $chartPadding * 0.5);
+		}
+	}
+
+
+	/////////////////////////////////
+	// TITLE
+	/////////////////////////////////
+
+	.tutorial-chart-title {
+
+		padding-left: $chartPadding;
+	}
+
+
+	/////////////////////////////////
+	// CONTENT
+	/////////////////////////////////
+
+	.tutorial-topline {
+
+		@extend %absolute;
+		left: $chartPadding;
+		top: 3vh;
+	}
+
+	.tutorial-chart-content,
+	.tutorial-chart-content-image {
+
+		padding-left: $chartPadding;
+		justify-content: space-between;
+
+		h3 {
+			font-size: 200% !important;
+			line-height: 100% !important;
+			margin-bottom: 2%;
+		}
+
+		p.col-50 {
+			width: 90%;
+			max-width: 900px;
+		}
+	}
+
+
+	.tutorial-chart-content-image {
+
+		.col-50:first-child { width: 47%; }
+
+		.col-50:last-child {
+
+			width: 53%;
+			height: $vh100;
+			overflow: hidden;
+
+			&::after {
+				@extend %absolute;
+				content: "";
+				width: 1000px;
+				height: 2000px;
+				background: #F8F8F8;
+				transform: translate(-100%,0) rotate(-18deg);
+				transform-origin: top right;
+			}
+		}
+
+		img {
+			object-fit: cover;
+			height: 100%;
+		}
+	}
+
+

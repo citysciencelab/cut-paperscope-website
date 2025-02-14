@@ -1,0 +1,78 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	MODEL ACCORDEON
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.model-accordion {
+
+		border: 		1px solid rgb(232, 237, 239);
+		padding: 		30px clamp(20px, 5%, 40px);
+		border-radius: 	8px;
+		box-shadow: 	0 3px 3px rgba(0, 0, 0, 0.04);
+		min-height: 	60px;
+	}
+
+
+	/////////////////////////////////
+	// HEADER
+	/////////////////////////////////
+
+	.model-accordion-header {
+
+		@extend %absolute-flex;
+
+		height: 		60px;
+		padding: 		0 clamp(20px, 5%, 40px);
+		align-items: 	center;
+		border-radius: 	8px;
+		cursor: 		pointer;
+
+		.svg-icon {
+			width: 		40px;
+			height: 	40px;
+			left: 		auto;
+			top: 		50%;
+			right: 		0;
+			transform: 	translate(13px, -50%);
+		}
+	}
+
+	.model-accordion-close {
+
+		@extend %absolute;
+
+		width: 		30px;
+		height: 	30px;
+		left: 		auto;
+		top: 		3px;
+		right: 		6px;
+		cursor: 	pointer;
+		transform: 	rotate(180deg);
+	}
+
+
+	/////////////////////////////////
+	// CONTENT
+	/////////////////////////////////
+
+	.model-accordion-content {
+
+		@extend %relative;
+
+		//overflow: hidden;
+	}
+
+
+	/////////////////////////////////
+	// HOVER
+	/////////////////////////////////
+
+	@include hover() {
+
+		.model-accordion-header:hover, .model-accordion-close:hover {
+
+			.svg-icon { fill: $colorCtaHover; }
+		}
+	}

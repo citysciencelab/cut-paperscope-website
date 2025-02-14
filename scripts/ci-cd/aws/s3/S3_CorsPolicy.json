@@ -1,0 +1,38 @@
+[
+    {
+        "AllowedHeaders": [
+            "Authorization"
+        ],
+        "AllowedMethods": [
+            "GET",
+            "HEAD"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": [
+            "Access-Control-Allow-Origin"
+        ]
+    },
+    {
+        "AllowedHeaders": [
+            "Authorization",
+            "Origin",
+            "x-amz-date",
+            "x-amz-content-sha256",
+            "content-type"
+        ],
+        "AllowedMethods": [
+            "PUT",
+            "POST",
+            "DELETE",
+            "GET"
+        ],
+        "AllowedOrigins": [
+            "https://dev.hello-nasty.com"
+        ],
+        "ExposeHeaders": [
+            "ETag"
+        ]
+    }
+]

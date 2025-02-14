@@ -1,0 +1,152 @@
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	HEADER NAVI
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	$naviButtonSize: 40px;
+
+	.header-navi {
+
+		@extend %relative;
+		@extend %no-select;
+
+		width: 		auto;
+		height: 	var(--naviHeight);
+	}
+
+
+	/////////////////////////////////
+	// NAVI CONTENT
+	/////////////////////////////////
+
+	.header-navi-content {
+
+		@extend %relative;
+
+		height: 		var(--naviHeight);
+
+		& > div {
+			@extend %relative-flex;
+			align-items: 	center;
+		}
+	}
+
+
+	/////////////////////////////////
+	// BACKEND NAVI
+	/////////////////////////////////
+
+	.header-navi .backend-navi-separator {
+
+		width: 50%;
+		margin: 2% 0;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	HEADER NAVI DROPDOWN
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	.header-navi.dropdown {
+
+		width: 			auto;
+		height: 		var(--naviHeight);
+		display: 		flex;
+		margin: 		0;
+		align-items: 	center;
+	}
+
+
+	/////////////////////////////////
+	// NAVI BUTTON
+	/////////////////////////////////
+
+	.header-navi-button {
+
+		@extend %relative;
+
+		width: 			$naviButtonSize;
+		height: 		$naviButtonSize;
+		cursor: 		pointer;
+
+		// remove button style
+		appearance: 	none;
+		outline: 		0;
+		border: 		0;
+		background: 	none;
+
+		.svg-inline .normal-fill { fill: $colorCopy; }
+	}
+
+
+	@include hover() {
+
+		.header-navi-button:hover .svg-inline .normal-fill { fill: $colorCta !important; }
+	}
+
+	.header-navi-button:focus-visible {
+
+		outline: 2px solid $colorFocus;
+		outline-offset: -2px;
+	}
+
+
+	/////////////////////////////////
+	// CONTENT
+	/////////////////////////////////
+
+	.header-navi.dropdown .header-navi-content {
+
+		width: 				100vw;
+		height: 			0;
+		position: 			absolute;
+		top: 				calc(100% + ((var(--headerHeight) - 100%) * 0.5) );
+		left: 				auto;
+		right: 				calc(var(--pagePadding) * -1);							// horizontal orientation to navi-button
+		background: 		var(--headerBackground);
+
+		flex-wrap: 			nowrap;
+		overflow: 			hidden;
+		flex-direction: 	column;
+		align-items: 		center;
+		justify-content: 	center;
+
+		.scroller {
+			width: calc(100% - 30px);
+		}
+
+		// hide scrollbar while animating
+		.simplebar-track { transition: opacity 0.3s; opacity: 1; }
+		&.animating .simplebar-track { opacity: 0; }
+
+		.simplebar-content {
+
+			@extend %relative-flex;
+
+			flex-direction: 	column;
+			align-items: 		center;
+			justify-content: 	center;
+		}
+
+		// force centerd content with scrollbar
+		.scroller.simplebar-scrollable-y .simplebar-content {
+			padding-left: 	15px !important;
+		}
+	}
+
+
+	/////////////////////////////////
+	// OPEN
+	/////////////////////////////////
+
+	.header-navi.dropdown.open .header-navi-button svg {
+
+		#active { display: block; }
+		#normal { display: none; }
+	}
