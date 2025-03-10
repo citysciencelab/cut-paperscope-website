@@ -8,6 +8,10 @@
 
 	namespace App\Http\Requests\App;
 
+	use Illuminate\Contracts\Validation\Validator;
+	use Illuminate\Support\Facades\Log;
+
+
 	// App
 	use App\Http\Requests\Model\BaseModelSaveRequest;
 
@@ -49,11 +53,17 @@ class ProjectSceneSaveRequest extends BaseModelSaveRequest {
 			'scene.*.uid' => 'bail|required|string',
 			'scene.*.shape' => 'bail|required|int',
 			'scene.*.color' => 'bail|required|int',
-			'scene.*.points' => 'bail|required|array',
-			'scene.*.points.*.x' => 'bail|required|numeric',
-			'scene.*.points.*.y' => 'bail|required|numeric',
+			'scene.*.points' => 'bail|nullable|array',
+			'scene.*.points.*.x' => 'bail|nullable|numeric',
+			'scene.*.points.*.y' => 'bail|nullable|numeric',
 		];
 	}
+
+	protected function failedValidation(Validator $validator)
+    {
+        Log::info('Validation failed for ' . $this->target . ' with errors: ' . json_encode($validator->errors()->toArray()));
+		parent::failedValidation($validator);
+    }
 
 
 

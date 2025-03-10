@@ -46,10 +46,9 @@
 		// { path: '', name: 'index', component: PageIndex },
 		{ path: '', name: 'index', redirect: { name: 'login' } },
 
-
 		// project
-		{ path: 'project/:slug', name: 'project', component: PageProject},
-		{ path: 'project/edit/:slug?', name: 'project.edit', component: PageProjectEdit},
+		{ path: 'project/:slug', name: 'project', component: PageProject,  meta: {auth:true}},
+		{ path: 'project/edit/:slug?', name: 'project.edit', component: PageProjectEdit,  meta: {auth:true}},
 
 		// visualizer
 		{ path: 'visualizer/:slug?', name: 'visualizer', component: PageVisualizer },

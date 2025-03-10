@@ -23,7 +23,7 @@
 
 	<script setup>
 
-		import { ref, onMounted, onUnmounted, provide } from 'vue';
+		import { ref, onMounted, onUnmounted, watch, provide } from 'vue';
 		import { useRoute } from 'vue-router';
 		import { useApi } from '@global/composables/useApi';
 		import { useConfig } from '@global/composables/useConfig';
@@ -51,6 +51,10 @@
 
 		const project = ref(null);
 		const mapping = ref(null);
+
+		var pollingInterval = 0;
+		var updateTimestamp = 0;
+
 		provide('project', project);
 
 		function loadProject() {
@@ -69,6 +73,22 @@
 			navi.value?.focus();
 			initBroadcast();
 			updateScene();
+		}
+
+		function updateProject() {
+
+			apiGetSlug('project' ,data => {
+
+				// update only if changed
+				if(updateTimestamp == data.updated_at) { return; }
+				updateTimestamp = data.updated_at;
+
+				project.value = data;
+				mapping.value = data.mapping;
+
+				updateScene();
+			})
+			.catch(error => console.log(error));
 		}
 
 
@@ -169,6 +189,8 @@
 		function updateScene() {
 
 			if(!project.value || !map || !terrainLoaded.value) { return; }
+
+			console.log('updateScene');
 
 			// init area
 			if(!areaInitialized.value) {
@@ -278,20 +300,26 @@
 		// BROADCAST
 		/////////////////////////////////
 
-		const { subscribePrivateChannel } = useBroadcast();
+		const { socketConnected, subscribeChannel } = useBroadcast();
 
 		function initBroadcast() {
 
-			subscribePrivateChannel('project.'+project.value.slug, onChannelMessage);
+			subscribeChannel('project.'+project.value.slug, onChannelMessage);
 		}
 
 		function onChannelMessage(event, data) {
 
-			if(event == 'ProjectSceneUpdated') {
-				project.value = data;
-				updateScene();
-			}
+			if(event == 'ProjectSceneUpdated') { updateProject(); }
 		}
+
+		watch(socketConnected, value => {
+
+			// activate polling mode if no websocket connection
+			clearInterval(pollingInterval);
+			if(!value) {
+				pollingInterval = setInterval(()=>{ updateProject(); }, 3000);
+			}
+		});
 
 
 	</script>

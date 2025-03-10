@@ -174,6 +174,7 @@ class ProjectController extends AppController {
 		}
 
 		$project->scene = $geojson;
+		$project->updated_at = now();
 		$project->save();
 
  		ProjectSceneUpdated::dispatch($project);

@@ -211,7 +211,7 @@ class PSObject {
 				hierarchy: positions,
 				extrudedHeight: height + this.groundOffset,
 				height: height - 5,
-				material: Cesium.Color.fromBytes(210,232,141,255),
+				material: Cesium.Color.fromBytes(190,208,135,255),
 			}
 		});
 

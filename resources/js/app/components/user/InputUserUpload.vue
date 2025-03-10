@@ -64,6 +64,7 @@
 		import XHRUpload from '@uppy/xhr-upload';
 		import German from '@uppy/locales/lib/de_DE';
 		import Cookies from 'js-cookie';
+		import slugify from 'slugify';
 
 		import '@uppy/core/dist/style.css';
 
@@ -179,6 +180,7 @@
 					'id': user.value.id,
 					'file_type': props.type,
 				},
+				onBeforeFileAdded,
 			};
 
 			// create uppy instance
@@ -227,6 +229,42 @@
 		const errorMessage = ref(null);
 		const isLoading = ref(false);
 		const previewFile = ref(null);
+
+		function onBeforeFileAdded(currentFile, files) {
+
+			// create slug from file name for correct url
+			var name = slugify(currentFile.name, {locale:'de', lower:true});
+
+			// validate pixel dimensions if image
+			if(currentFile.type.includes('image/')) {
+
+				// convert file to image
+				var url = URL.createObjectURL(currentFile.data);
+				var img = new Image;
+				img.onload = () => {
+
+					if(img.width>4000 || img.height >4000) {
+
+						// show error message
+						this.uppy.info(t('error.maxpixel'), 'error', 20*1000);
+
+						// remove file from list
+						this.uppy.removeFile(currentFile.id);
+					}
+					URL.revokeObjectURL(img.src);
+				};
+				img.src = url;
+			}
+
+			// add file to upload list
+			const modifiedFile = {
+				...currentFile,
+				meta: {	...currentFile.meta, name },
+				name
+			};
+
+			return modifiedFile;
+		}
 
 		function onUpload() {
 
@@ -307,8 +345,10 @@
 	<i18n lang="json5">
 		{
 			"de": {
+				"error.maxpixel": "Fehler: Das Bild hat mehr als 4000px in Breite oder Höhe.",
 			},
 			"en": {
+				"error.maxpixel": "Error: The image has more than 4000px in width or height.",
 				"Keine Berechtigung": "Not authorized",
 				"Datei fehlerhaft": "File corrupted",
 				"Unbekannter Upload-Fehler": "Unknown upload error",

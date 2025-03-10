@@ -101,7 +101,10 @@ class ProcessProjectUpload extends BaseJob
 
 		$this->target->mapping = $mapping;
 
-		if($updated) { ProjectSceneUpdated::dispatch($this->target); }
+		if($updated) {
+			$this->target->updated_at = now();
+			ProjectSceneUpdated::dispatch($this->target);
+		}
 	}
 
 

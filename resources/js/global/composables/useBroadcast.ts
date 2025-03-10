@@ -104,6 +104,7 @@ export const useBroadcast = () => {
 
 	function initNotifications() {
 
+		if(!user.value) return;
 		window.Echo.private(`App.Models.Auth.User.${user.value.id}`).notification(notificationCallback);
 	}
 
@@ -121,6 +122,18 @@ export const useBroadcast = () => {
 	/////////////////////////////////
 	// CHANNELS
 	/////////////////////////////////
+
+	function subscribeChannel(channel: string, callback: Function) {
+
+		window.Echo?.channel(channel).listenToAll((event: string, data: any) => {
+			callback(event, data);
+		});
+	}
+
+	function sendChannel(channel: string, event: string, data: any) {
+
+		window.Echo?.channel(channel).whisper(event, data);
+	}
 
 	function subscribePrivateChannel(channel: string, callback: Function) {
 
@@ -144,6 +157,7 @@ export const useBroadcast = () => {
 	return {
 		socketConnected, toggleWebsocket,
 		onNotification,
+		subscribeChannel, sendChannel,
 		subscribePrivateChannel, sendPrivateChannel
 	};
 

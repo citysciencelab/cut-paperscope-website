@@ -11,13 +11,11 @@
 	// Laravel
 	use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 	use Illuminate\Broadcasting\Channel;
-	use Illuminate\Broadcasting\PrivateChannel;
 	use Illuminate\Foundation\Events\Dispatchable;
 	use Illuminate\Queue\SerializesModels;
 
 	// App
 	use App\Models\App\Project;
-	use App\Http\Resources\ProjectSceneResource;
 
 
 
@@ -43,13 +41,15 @@ class ProjectSceneUpdated implements ShouldBroadcast {
 
 	public function broadcastOn(): Channel {
 
-		return new PrivateChannel('project.'.$this->project->slug);
+		return new Channel('project.'.$this->project->slug);
 	}
 
 
 	public function broadcastWith(): array {
 
-		return (new ProjectSceneResource($this->project))->toArray(request());
+		return [
+			'id' => $this->project->id,
+		];
 	}
 
 
