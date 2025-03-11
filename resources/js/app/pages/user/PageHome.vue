@@ -9,6 +9,7 @@
 
 		<project-navi>
 			<btn label="Neues Projekt" to="project.edit" icon="btn-add" class="cta"/>
+			<btn label="Downloads" to="page.detail" :params="{slug:'downloads'}" icon="btn-download"/>
 		</project-navi>
 
 		<section v-if="verified" class="content">

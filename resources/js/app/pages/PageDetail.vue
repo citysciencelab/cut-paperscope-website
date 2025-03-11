@@ -14,10 +14,6 @@
 			<fragments v-if="content?.fragments?.length" :items="content.fragments"/>
 		</section>
 
-		<section class="content" v-if="content?.fragments?.length && includeSocial">
-			<social-share/>
-		</section>
-
 	</template>
 
 

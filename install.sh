@@ -244,11 +244,11 @@ clear
 	cp .env.example .env
 
 	# set APP_NAME
-	readinput -p "Set APP_NAME:  " -i "Website Laravel" -e appName
+	readinput -p "Set APP_NAME:  " -i "PaperScope" -e appName
 	replaceEnv ".env" "APP_NAME" "\"$appName\""
 
 	# read APP_URL
-	readinput -p "Set APP_URL (include 'public' on localhost):  " -i "http://localhost/client/project/public/" -e appUrlRaw
+	readinput -p "Set APP_URL (include 'public' on localhost):  " -i "http://localhost/paperscope/website/public/" -e appUrlRaw
 
 	# append trailing "/" to APP_URL
 	[[ "${appUrlRaw}" != */ ]] && appUrlRaw="${appUrlRaw}/"
@@ -264,6 +264,10 @@ clear
 
 	# set SESSION_DOMAIN
 	replaceEnv ".env" "SESSION_DOMAIN" "$appDomain"
+
+	# set ROOT_USER
+	readinput -p "Set mail for ROOT user:  " -i "admin@paperscope.de" -e rootUser
+	replaceEnv ".env" "ROOT_EMAIL" "\"$rootUser\""
 
 	# set ROOT_PASSWORD
 	readinput -p "Set password for ROOT user:  " -e rootPassword
@@ -315,27 +319,6 @@ clear
 
 #///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #/
-#/	MISC
-#/
-#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
-
-
-	printBanner "MISC"
-
-	# load a dump of data if available
-	dumpFile=$(find . -maxdepth 1 -name "dump.zip")
-
-	if [[ -f "$dumpFile" ]]; then
-		readinput -p "Dump of data found. Use this data? (y/n):  " -e useDump
-		useDump="$(convertToBool "$useDump")"
-	else
-		useDump="false"
-	fi
-
-
-
-#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#/
 #/	DEPENDENCIES
 #/
 #///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
@@ -366,11 +349,6 @@ clear
 	php artisan storage:link
 	php artisan migrate:fresh --seed
 	php artisan migrate:fresh --seed --env=testing
-
-	if [[ "$useDump" == "true" ]]; then
-
-		php artisan dump:load
-	fi
 
 
 

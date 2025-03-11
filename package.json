@@ -80,7 +80,7 @@
         "@uppy/tus": "^4.1.1",
         "@uppy/xhr-upload": "^4.2.0",
         "axios": "^1.6.2",
-        "caniuse-lite": "^1.0.30001689",
+        "caniuse-lite": "^1.0.30001703",
         "cesium": "^1.126.0",
         "chart.js": "^4.4.1",
         "ckeditor5": "^43.2.0",
