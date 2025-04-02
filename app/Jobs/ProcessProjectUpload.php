@@ -11,6 +11,7 @@
 	// Laravel
 	use Illuminate\Support\Facades\Storage;
 	use Illuminate\Support\Str;
+	use Illuminate\Support\Facades\Cache;
 
 	// App
 	use App\Jobs\Base\BaseJob;
@@ -80,6 +81,7 @@ class ProcessProjectUpload extends BaseJob
 				// target file already exists?
 				if($this->storage->exists($targetFile)) {
 					$m['props']['file'] = $this->storageUrl . $targetFile;
+					$updated = true;
 				}
 				else {
 					$m['props']['file'] = null;
@@ -103,6 +105,7 @@ class ProcessProjectUpload extends BaseJob
 
 		if($updated) {
 			$this->target->updated_at = now();
+			Cache::flush();
 			ProjectSceneUpdated::dispatch($this->target);
 		}
 	}
