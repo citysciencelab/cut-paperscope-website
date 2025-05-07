@@ -186,7 +186,7 @@
 
 			// save scaling
 			localStorage.setItem("paperscope-calibration-"+project.value.slug, scaling.value);
-			sendPrivateChannel('project.'+project.value.slug, 'Scaling', { value: scaling.value });
+			sendChannel('project.'+project.value.slug, 'Scaling', { value: scaling.value });
 		}
 
 		function transformMatRender() {
@@ -282,11 +282,11 @@
 		// BROADCAST
 		/////////////////////////////////
 
-		const { subscribePrivateChannel, sendPrivateChannel, socketConnected, toggleWebsocket } = useBroadcast();
+		const { subscribeChannel, sendChannel, socketConnected, toggleWebsocket } = useBroadcast();
 
 		function initBroadcast() {
 
-			subscribePrivateChannel('project.'+project.value.slug, onChannelMessage);
+			subscribeChannel('project.'+project.value.slug, onChannelMessage);
 		}
 
 		function onChannelMessage(event, data) {
