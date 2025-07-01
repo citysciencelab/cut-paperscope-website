@@ -49,6 +49,7 @@
 		'./components/project/**/*.vue',
 		'./components/visualizer/**/*.vue',
 		'./components/beamer/**/*.vue',
+		'./components/simulation/**/*.vue',
 	]);
 	global.addAsyncComponents(app,asyncComponents);
 

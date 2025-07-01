@@ -13,6 +13,7 @@
 	use Ramsey\Uuid\Uuid;
 	use Illuminate\Support\Carbon;
 	use Illuminate\Support\Facades\Hash;
+	use Illuminate\Support\Facades\DB;
 	use Laravel\Cashier\Subscription;
 
 	// Models
@@ -44,11 +45,9 @@ class UserTableSeeder extends Seeder
 		// Reset cached roles and permissions
 		app()['cache']->forget('spatie.permission.cache');
 
-		// create root user
 		$this->addRootUser('Hello', 'Nasty', config('auth.root.email'), 'm', 'password');
-
-		// create testing user
 		$this->addTestingUser();
+		$this->addManagerUser();
 	}
 
 
@@ -115,6 +114,43 @@ class UserTableSeeder extends Seeder
 		$tester->email_verified_at = Carbon::now();
 		$tester->syncRoles(['user']);
 		$tester->save();
+	}
+
+
+	private function addManagerUser() {
+
+		$manager = User::create([
+			'id' => 		Uuid::uuid4(),
+			'name' =>		'PaperScope',
+			'surname' => 	'Manager',
+			'fullname' => 	'PaperScope Manager',
+
+			'email' =>		'manager@paperscope.de',
+			'username' => 	'manager',
+
+			'gender' =>		'u',
+			'password' =>	Hash::make("BcavReLGxW38b4uU"),
+		]);
+
+		// non fillable properties
+		$manager->created_at = Carbon::now();
+		$manager->updated_at = Carbon::now();
+		$manager->email_verified_at = Carbon::now();
+		$manager->syncRoles(['user']);
+		$manager->save();
+
+		// create personal access token
+		DB::table('personal_access_tokens')->insert([
+			'id' => Uuid::uuid4(),
+			'tokenable_type' => User::class,
+			'tokenable_id' => $manager->id,
+			'name' => 'Manager Token',
+			'token' => "4f8347105cdcf8cce7342819a6f7cca89ebaa6b0fa63c95281575e87f6e2a94a",
+			'abilities' => json_encode(['*']),
+			'expires_at' => null,
+			'created_at' => Carbon::now(),
+			'updated_at' => Carbon::now(),
+		]);
 	}
 
 

@@ -15,6 +15,7 @@
 				<!-- FORM -->
 				<input-text  id="scaling"  v-if="isCalibrating" v-model="scaling" type="number"/>
 				<btn label="save" class="small secondary" v-if="isCalibrating" @click="saveCalibration"/>
+				<btn label="reset" class="small secondary" v-if="isCalibrating" @click="resetCalibration"/>
 
 				<btn icon="btn-fullscreen" class="small secondary" v-else @click="toggleFullscreen"/>
 				<btn :icon="socketConnected ? 'btn-connected' : 'btn-disconnected'" :class="['small secondary socket',{'disconnected': !socketConnected}]" @click="toggleWebsocket"/>
@@ -68,7 +69,7 @@
 		function onProjectLoaded(data) {
 
 			project.value = data;
-			scaling.value = parseFloat(localStorage.getItem("paperscope-calibration-"+project.value.slug)) || 1.0;
+			scaling.value = parseFloat(localStorage.getItem("paperscope-scaling-"+project.value.slug)) || 1.0;
 
 			if(p5Instance) { initMapper(p5Instance); }
 			initBroadcast();
@@ -156,7 +157,7 @@
 		}
 
 		function toggleBeamer(value) {
-
+			console.log("Toggle Beamer", value);
 			if(isCalibrating.value) { return; }
 			mapRender.isHidden = value;
 		}
@@ -185,8 +186,23 @@
 			pMapper.save(project.value.slug);
 
 			// save scaling
-			localStorage.setItem("paperscope-calibration-"+project.value.slug, scaling.value);
-			sendChannel('project.'+project.value.slug, 'Scaling', { value: scaling.value });
+			localStorage.setItem("paperscope-scaling-"+project.value.slug, scaling.value);
+			sendPrivateChannel('project.'+project.value.slug, 'Scaling', { value: scaling.value });
+		}
+
+		function resetCalibration() {
+
+			mapCalibrate.x = 0;
+			mapCalibrate.y = 0;
+			mapCalibrate.mesh[mapCalibrate.TL].x = 0;
+			mapCalibrate.mesh[mapCalibrate.TL].y = 0;
+			mapCalibrate.mesh[mapCalibrate.TR].x = mapCalibrate.width;
+			mapCalibrate.mesh[mapCalibrate.TR].y = 0;
+			mapCalibrate.mesh[mapCalibrate.BR].x = mapCalibrate.width;
+			mapCalibrate.mesh[mapCalibrate.BR].y = mapCalibrate.height;
+			mapCalibrate.mesh[mapCalibrate.BL].x = 0;
+			mapCalibrate.mesh[mapCalibrate.BL].y = mapCalibrate.height;
+			mapCalibrate.calculateMesh();
 		}
 
 		function transformMatRender() {
@@ -252,10 +268,6 @@
 			}
 		}
 
-		function movePointVertical(value) {
-
-		}
-
 		onBeforeUnmount(() => {
 
 			window.removeEventListener('keydown', onKeydown);
@@ -282,11 +294,11 @@
 		// BROADCAST
 		/////////////////////////////////
 
-		const { subscribeChannel, sendChannel, socketConnected, toggleWebsocket } = useBroadcast();
+		const { subscribePrivateChannel, sendPrivateChannel, socketConnected, toggleWebsocket } = useBroadcast();
 
 		function initBroadcast() {
 
-			subscribeChannel('project.'+project.value.slug, onChannelMessage);
+			subscribePrivateChannel('project.'+project.value.slug, onChannelMessage);
 		}
 
 		function onChannelMessage(event, data) {

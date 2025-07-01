@@ -17,6 +17,7 @@
 	use App\Models\Backend\Setting;
 	use App\Models\Shop\Product;
 	use App\Models\App\Project;
+	use App\Models\App\Simulation;
 
 
 
@@ -58,6 +59,9 @@ class TestingSeeder extends Seeder
 	
 		Project::factory()->count(3)->public()->hasFragments(3)->create();
 		Project::factory()->count(3)->hasFragments(3)->create(['public'=>false]);
+	
+		Simulation::factory()->count(3)->public()->create();
+		Simulation::factory()->count(3)->create(['public'=>false]);
 	}
 
 

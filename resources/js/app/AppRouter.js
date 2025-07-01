@@ -47,14 +47,14 @@
 		{ path: '', name: 'index', redirect: { name: 'login' } },
 
 		// project
-		{ path: 'project/:slug', name: 'project', component: PageProject,  meta: {auth:true}},
-		{ path: 'project/edit/:slug?', name: 'project.edit', component: PageProjectEdit,  meta: {auth:true}},
+		{ path: 'project/:slug', name: 'project', component: PageProject, meta: {auth:true}},
+		{ path: 'project/edit/:slug?', name: 'project.edit', component: PageProjectEdit, meta: {auth:true}},
 
 		// visualizer
-		{ path: 'visualizer/:slug?', name: 'visualizer', component: PageVisualizer },
+		{ path: 'visualizer/:slug?', name: 'visualizer', component: PageVisualizer, meta: {auth:true} },
 
 		// beamer
-		{ path: 'beamer/:slug?', name: 'beamer', component: PageBeamer },
+		{ path: 'beamer/:slug?', name: 'beamer', component: PageBeamer, meta: {auth:true} },
 
 		// [add model routes]
 

@@ -10,6 +10,7 @@
 		<!-- CONTENT -->
 		<header-navi-item label="Unterseiten" to="backend.page"/>
 		<header-navi-item label="Projekte" to="backend.project"/>
+		<header-navi-item label="Simulationen" to="backend.simulation"/>
 		<hr class="backend-navi-separator">
 
 		<!-- ADMIN -->

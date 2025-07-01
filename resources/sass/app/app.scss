@@ -68,12 +68,18 @@
 	@import 'components/project/project-paper';
 	@import 'components/project/project-objects';
 	@import 'components/project/project-mapping';
+	@import 'components/project/project-simulation';
 
 	// visualizer
 	@import 'components/visualizer/visualizer';
+	@import 'components/visualizer/visualizer-navi';
 
 	// beamer
 	@import 'components/beamer/beamer';
+
+	// simulation
+	@import 'components/simulation/simulation-process';
+	@import 'components/simulation/simulation-result';
 
 
 	/////////////////////////////////

@@ -88,10 +88,12 @@ export const useBroadcast = () => {
 	/////////////////////////////////
 
 	window.Echo.connector.pusher.connection.bind('connected', () => {
+
 		socketConnected.value = true;
 	});
 
 	window.Echo.connector.pusher.connection.bind('disconnected', () => {
+
 		socketConnected.value = false;
 	});
 
@@ -130,11 +132,6 @@ export const useBroadcast = () => {
 		});
 	}
 
-	function sendChannel(channel: string, event: string, data: any) {
-
-		window.Echo?.channel(channel).whisper(event, data);
-	}
-
 	function subscribePrivateChannel(channel: string, callback: Function) {
 
 		window.Echo?.private(channel).listenToAll((event: string, data: any) => {
@@ -157,7 +154,7 @@ export const useBroadcast = () => {
 	return {
 		socketConnected, toggleWebsocket,
 		onNotification,
-		subscribeChannel, sendChannel,
+		subscribeChannel,
 		subscribePrivateChannel, sendPrivateChannel
 	};
 

@@ -20,6 +20,7 @@
 	use App\Models\Backend\Setting;
 	use App\Models\Shop\Product;
 	use App\Models\App\Project;
+	use App\Models\App\Simulation;
 
 
 
@@ -52,8 +53,9 @@ class LocalSeeder extends Seeder
 		if(config('app.features.shop')) {
 			$this->seedFactoryData(Product::factory(),'Shop/ProductFactoryData.json');
 		}
-	
+
 		$this->seedFactoryData(Project::factory(),'App/ProjectFactoryData.json');
+		$this->seedFactoryData(Simulation::factory(),'App/SimulationFactoryData.json');
 	}
 
 

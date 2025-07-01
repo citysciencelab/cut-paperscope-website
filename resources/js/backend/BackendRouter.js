@@ -30,6 +30,10 @@
 	const PageProjectList = () => import('./pages/project/PageProjectList.vue');
 	const PageProjectEdit = () => import('./pages/project/PageProjectEdit.vue');
 
+	// simulation
+	const PageSimulationList = () => import('./pages/simulation/PageSimulationList.vue');
+	const PageSimulationEdit = () => import('./pages/simulation/PageSimulationEdit.vue');
+
 	// [add model includes]
 
 	// setting
@@ -74,6 +78,10 @@
 		// project
 		{ path: 'backend/project/', name: 'backend.project', component: PageProjectList, meta:{auth:true} },
 		{ path: 'backend/project/edit/:id?', name:'backend.project.edit', component: PageProjectEdit, meta: {auth:true} },
+
+		// simulation
+		{ path: 'backend/simulation/', name: 'backend.simulation', component: PageSimulationList, meta:{auth:true} },
+		{ path: 'backend/simulation/edit/:id?', name:'backend.simulation.edit', component: PageSimulationEdit, meta: {auth:true} },
 
 		// [add model routes]
 

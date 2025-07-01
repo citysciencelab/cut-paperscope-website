@@ -18,9 +18,10 @@
 
 class PSObject {
 
-	constructor(feature, mapping) {
+	constructor(feature, map, mapping) {
 
 		this.uid = feature.properties.uid;
+		this.map = map;
 		this.feature = feature;
 		this.points = feature.geometry.coordinates;
 
@@ -73,140 +74,91 @@ class PSObject {
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//	2D
+//	ENTITY
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	get2D() {
-		/*
-		var feature = new Feature();
-		const target = this.mapping.target;
-
-		// geometry
-		if(target == 'model') {
-			const circle = new Circle(this.points[0], 0.00005);
-			feature.setGeometry(circle);
-		}
-		else {
-			const lastPoint = this.points[0];
-			const polygon = new Polygon([[...this.points, lastPoint]]);
-			feature.setGeometry(polygon);
-		}
-
-		// styling
-		if(target == 'greenspace') {
-			var fill = new Fill({color: '#DCF297'});
-			var stroke = new Stroke({color: '#B6D397', width: 1});
-		}
-		if(target == 'street') {
-			var fill = new Fill({color: '#D5D5D5'});
-			var stroke = new Stroke({color: '#605D66', width: 1});
-		}
-		else {
-			var fill = new Fill({color: this.getFillColor(false)});
-			var stroke = new Stroke({color: this.getStrokeColor(false), width: 1});
-		}
-
-		feature.setStyle(new Style({fill, stroke}));
-		return feature;
-		*/
-
-		return null;
-	}
-
-
-
-/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//	3D
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
-
-
-	get3D(scene) {
+	addEntity() {
 
 		switch(this.mapping.target) {
-			case 'shape-2d':	return this.getShape2D(scene);
-			case 'shape-3d':	return this.getShape3D(scene);
-			case 'model':		return this.getModel(scene);
-			case 'greenspace':	return this.getGreenspace(scene);
-			case 'street':		return this.getStreet(scene);
-			default:			return this.getShape3D(scene);
+			case 'shape-2d':	return this.getShape2D();
+			case 'shape-3d':	return this.getShape3D();
+			case 'model':		return this.getModel();
+			case 'greenspace':	return this.getGreenspace();
+			case 'street':		return this.getStreet();
+			default:			return this.getShape3D();
 		}
 	}
 
 
-	getShape2D(scene) {
+	getShape2D() {
 
 		const positions = Cesium.Cartesian3.fromDegreesArray(this.points.flat());
-		const height = this.findHeight(scene, this.points);
+		const height = this.findHeight(this.points);
 
 		// entity
-		var entity = new Cesium.Entity({
-			id: this.uid,
+		return this.createEntity({
 			polygon: {
 				hierarchy: new Cesium.PolygonHierarchy(positions),
 				extrudedHeight: height + this.groundOffset,
 				height: height - 5,
-				material: this.getFillColor(true),
+				material: this.getFillColor(),
 			}
 		});
-
-		return entity;
 	}
 
 
-	getShape3D(scene) {
+	getShape3D() {
 
 		const positions = Cesium.Cartesian3.fromDegreesArray(this.points.flat());
-		const height = this.findHeight(scene, this.points);
+		const height = this.findHeight(this.points);
 
 		// entity
-		var entity = new Cesium.Entity({
-			id: this.uid,
+		return this.createEntity({
 			polygon: {
 				hierarchy: new Cesium.PolygonHierarchy(positions),
 				extrudedHeight: parseInt(this.mapping.props?.height) + height,
 				height: height - 5,
-				material: this.getFillColor(true),
+				material: this.getFillColor(),
 			},
 		});
-
-		return entity;
 	}
 
 
-	getModel(scene) {
+	getModel() {
 
 		var uri = this.mapping.props.file;
 		if(!uri.startsWith('http')) { uri = window.config.base_url + uri; }
 
-		const height = this.findHeight(scene, this.points);
+		const height = this.findHeight(this.points);
 
 		// entity
-		var entity = new Cesium.Entity({
-			id: this.uid,
+		var entity = this.createEntity({
 			position: Cesium.Cartesian3.fromDegrees(this.points[0][0], this.points[0][1], height),
+			orientation: Cesium.Transforms.headingPitchRollQuaternion(
+				Cesium.Cartesian3.fromDegrees(this.points[0][0], this.points[0][1], height),
+				new Cesium.HeadingPitchRoll( Cesium.Math.toRadians(this.mapping.props.rotation || 0), 0, 0 )
+			),
 			model: {
 				uri,
 				scale: this.mapping.props.scale,
-				rotation: Cesium.Math.toRadians(this.mapping.props.rotation),
-			}
+			},
 		});
+
+		//setTimeout(() => this.calculateModelBoundingRectangle(entity), 250);
 
 		return entity;
 	}
 
 
-	getGreenspace(scene) {
+	getGreenspace() {
 
 		const positions = Cesium.Cartesian3.fromDegreesArray(this.points.flat());
-		const height = this.findHeight(scene, this.points);
+		const height = this.findHeight(this.points);
 
 		// entity
-		var entity = new Cesium.Entity({
-			id: this.uid,
+		return this.createEntity({
 			polygon: {
 				hierarchy: positions,
 				extrudedHeight: height + this.groundOffset,
@@ -214,19 +166,16 @@ class PSObject {
 				material: Cesium.Color.fromBytes(190,208,135,255),
 			}
 		});
-
-		return entity;
 	}
 
 
-	getStreet(scene) {
+	getStreet() {
 
 		const positions = Cesium.Cartesian3.fromDegreesArray(this.points.flat());
-		const height = this.findHeight(scene, this.points);
+		const height = this.findHeight(this.points);
 
 		// entity
-		var entity = new Cesium.Entity({
-			id: this.uid,
+		return this.createEntity({
 			polygon: {
 				hierarchy: positions,
 				extrudedHeight: height + this.groundOffset,
@@ -237,16 +186,14 @@ class PSObject {
     			outlineWidth: 4,
 			}
 		});
-
-		return entity;
 	}
 
 
-	findHeight(scene, points) {
+	findHeight(points) {
 
 		var maxHeight = 0;
 		points.forEach(point => {
-			const height = scene.globe.getHeight(Cesium.Cartographic.fromDegrees(point[0], point[1]));
+			const height = this.map.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(point[0], point[1]));
 			maxHeight = Math.max(maxHeight, height);
 		});
 
@@ -262,36 +209,65 @@ class PSObject {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	getFillColor(is3D=true) {
+	createEntity(properties) {
+
+		// update existing entity
+		var entity = this.map.entities.getById(this.uid);
+		if(entity) { return entity; }
+
+		// create new entity
+		entity = new Cesium.Entity({
+			id: this.uid,
+			...properties
+		});
+
+		entity.boundingRectangle = this.calculatBoundingRectangle();
+
+		this.map.entities.add(entity);
+
+		return entity;
+	}
+
+
+	calculatBoundingRectangle() {
+
+		if(this.shape == 'cross') {
+			const point = this.points[0];
+			return Cesium.Rectangle.fromDegrees(point[0] - 0.0003, point[1] - 0.0002, point[0] + 0.0003, point[1] + 0.0002);
+		}
+
+		// find min and max coordinates from points
+		const minX = Math.min(...this.points.map(p => p[0]));
+		const maxX = Math.max(...this.points.map(p => p[0]));
+		const minY = Math.min(...this.points.map(p => p[1]));
+		const maxY = Math.max(...this.points.map(p => p[1]));
+
+		return Cesium.Rectangle.fromDegrees(minX, minY, maxX, maxY);
+	}
+
+
+	calculateModelBoundingRectangle(entity) {
+
+		// check for bounding sphere
+		var boundingSphere = new Cesium.BoundingSphere();
+		const result = this.map.dataSourceDisplay.getBoundingSphere(entity,true, boundingSphere);
+
+		// retry check
+		if(result != Cesium.BoundingSphereState.DONE) {
+			setTimeout(() => this.calculateModelBoundingRectangle(entity), 250);
+			return;
+		}
+
+		// sphere to rectangle
+		const rectangle = Cesium.Rectangle.fromBoundingSphere(boundingSphere);
+		entity.boundingRectangle = rectangle;
+	}
+
+
+	getFillColor() {
 
 		const hexColor = this.mapping.props?.fill;
-		return is3D ? Cesium.Color.fromCssColorString(hexColor) : hexColor;
-	}
-
-
-	getStrokeColor(is3D=true) {
-
-		const hexColor = this.mapping.props?.stroke;
-		return is3D ? Cesium.Color.fromCssColorString(hexColor) : hexColor;
-	}
-
-
-	getRandomPointInsidePolygon() {
-
-		const polygon = new Polygon([this.points]);
-		const extent = polygon.getExtent();
-
-		const pointInPolygon = false;
-
-		while(!pointInPolygon) {
-
-			var lat = extent[0] + Math.random() * (extent[2] - extent[0]);
-			var lon = extent[1] + Math.random() * (extent[3] - extent[1]);
-
-			if(polygon.intersectsCoordinate([lat, lon])) {
-				return [lat, lon];
-			}
-		}
+		return Cesium.Color.fromCssColorString(hexColor);
 	}
 
 

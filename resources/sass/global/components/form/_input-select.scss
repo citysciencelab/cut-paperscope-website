@@ -127,9 +127,8 @@
 		border-bottom-right-radius:	var(--inputBorderRadius);
 		border-bottom-left-radius:	var(--inputBorderRadius);
 
-		.scroller {
-			max-height: 	50vh;
-		}
+		.simplebar-content { min-height: 0; }
+		.scroller { max-height: 50vh; }
 	}
 
 

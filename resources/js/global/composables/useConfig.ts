@@ -27,6 +27,7 @@ export const useConfig = () => {
 
 	const baseUrl: string	= conf.base_url.startsWith('//localhost') ? 'http:'+conf.base_url : conf.base_url;
 	const basePath: string	= conf.base_path;
+	const tilesetUrl: string = conf.tileset_url;
 
 
 	/////////////////////////////////
@@ -73,7 +74,7 @@ export const useConfig = () => {
 	/////////////////////////////////
 
 	return {
-		baseUrl, basePath,
+		baseUrl, basePath, tilesetUrl,
 		storageUrlPublic, storageUrlS3,
 		setStorageUrl,
 		isLocal,

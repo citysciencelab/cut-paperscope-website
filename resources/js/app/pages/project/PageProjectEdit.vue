@@ -17,6 +17,7 @@
 			<btn :label="t('Gäste verwalten')" icon="btn-guests" data-tab="guests" @click="openTab" disabled/>
 			<btn :label="t('Visualizer öffnen')" icon="btn-visualizer" to="visualizer" target="_blank" :params="{slug:form.slug}" v-if="form.id"/>
 			<btn :label="t('Beamer Projektion')" icon="btn-visualizer" to="beamer" target="_blank" :params="{slug:form.slug}" v-if="form.id"/>
+			<btn :label="t('Simulation')" icon="btn-simulation" data-tab="simulation" @click="openTab" :disabled="!form.scene"/>
 			<btn :label="t('Projekt speichern')" ref="submitBtn" icon="btn-save" class="cta project-navi-save" @click="submit" :disabled="!form.start_longitude" blocking/>
 			<btn :label="t('Projekt löschen')" icon="btn-delete" class="delete" v-if="form.id" @click="confirmDelete"/>
 		</project-navi>
@@ -28,6 +29,7 @@
 			<project-objects class="project-edit-tab"/>
 			<project-mapping class="project-edit-tab"/>
 			<project-guests class="project-edit-tab"/>
+			<project-simulation class="project-edit-tab"/>
 		</section>
 
 		<!-- LOADING -->

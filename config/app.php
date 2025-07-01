@@ -84,6 +84,7 @@ return [
     */
 
 	'url' => env('APP_URL', 'http://localhost'),
+	'tileset_url' => env('CESIUM_3D_TILESET_URL', null),
 
 
 	/*

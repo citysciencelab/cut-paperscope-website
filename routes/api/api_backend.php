@@ -36,7 +36,8 @@
 		ApiRoutes::setModelBackendRoutes('setting', false, 'Base\\Setting');
 		ApiRoutes::setModelBackendRoutes('product', false, 'Shop\\Product');
 		ApiRoutes::setModelBackendRoutes('project');
-		// [add model app routes]
+		ApiRoutes::setModelBackendRoutes('simulation');
+		// [add model backend routes]
 
 		// User
 		Route::post('backend/user', [UserController::class,'get'])->name('api.backend.user');

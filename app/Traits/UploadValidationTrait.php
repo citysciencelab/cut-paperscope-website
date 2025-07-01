@@ -53,7 +53,7 @@ trait UploadValidationTrait {
 			'.jsp', '.jspx', '.jsw', '.jsv', '.jspf', '.jtml',
 			'.sql', '.cgi', '.pl', '.htaccess', '.htpasswd', '.py',
 			'.sh', '.bash', '.csh', '.ksh', '.zsh', '.bashrc', '.bash_profile',
-			'.zip', '.rar', '.tar', '.gz', '.gzip', '.7z', '.bz2', '.bzip2', '.xz', '.lzma', '.cab', '.iso', '.dmg',
+			'.rar', '.tar', '.gz', '.gzip', '.7z', '.bz2', '.bzip2', '.xz', '.lzma', '.cab', '.iso', '.dmg',
 			'.tar.gz', '.tar.bz2', '.tar.xz', '.tar.lzma', '.tar.lz', '.tar.Z', '.tar.lzo', '.tar.lz4', '.tar.sz', '.tar.zst',
 			// prevent double extensions with valid extensions
 			'.txt.', '.jpg.', '.jpeg.', '.png.', '.gif.', '.svg.', '.webp.',

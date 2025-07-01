@@ -192,9 +192,9 @@ export const useApi = () => {
 	 * Instead of the full response, only the "data" property will be passed to the callback function.
 	 */
 
-	async function apiPost(routeName: string, data: any, callback?: Function): Promise<ApiResponse|ApiError> {
+	async function apiPost(routeName: string, data: any, callback?: Function, params?: any): Promise<ApiResponse|ApiError> {
 
-		return window.axios.post(createRoute(routeName),data,config)
+		return window.axios.post(createRoute(routeName, params),data,config)
 			.then((r: ApiResponse) => { callback?.(r.data?.data, getPaginator(r)); return r; })
 			.catch(apiError);
 	}

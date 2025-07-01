@@ -113,6 +113,7 @@ class Controller extends BaseController {
 			'cookie_path' => 			$path,
 
 			'hash' => 					$this->getViteHash(),
+			'tileset_url' => 			config('app.tileset_url', null),
 		];
 
 		// if authenticated, include minimal user data
@@ -440,6 +441,22 @@ class Controller extends BaseController {
 
 		// no access
 		return false;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SAVE HELPER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function getInputJson(mixed $json): string|bool {
+
+		if(empty($json) || $json=='[]' || (is_array($json) && count($json)==0)) { return '{}'; }
+
+		return json_encode($json);
 	}
 
 

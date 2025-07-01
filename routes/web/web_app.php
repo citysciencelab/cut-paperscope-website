@@ -13,6 +13,7 @@
 	// App
 	use App\Http\Controllers\App\AppController;
 	use App\Http\Controllers\App\ProjectController;
+	use App\Http\Controllers\App\SimulationController;
 
 
 
@@ -41,6 +42,10 @@
 	Route::get('project/geojson/{slug}', [ProjectController::class,'downloadGeoJson'])->name('api.project.geojson');
 	Route::get('project/pdf', [ProjectController::class,'getPdf'])->name('project.pdf');
 	Route::get('project/map', [ProjectController::class,'getMap'])->name('project.map');
+
+	// simulation
+	Route::get('simulation/image/{id}', [SimulationController::class,'image'])->name('simulation.image');
+	Route::get('simulation/project/{id}', [SimulationController::class,'project'])->name('simulation.project');
 
 	// Force all routes to Vue
 	Route::fallback([AppController::class,'showIndex'])->name('index.vue');

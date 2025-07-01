@@ -21,10 +21,10 @@
 
 				<!-- COORDINATES -->
 				<div class="cols">
-					<input-text class="col-50" label="Start Longitude" id="start-longitude" v-model="form"/>
 					<input-text class="col-50" label="Start Latitude" id="start-latitude" v-model="form"/>
-					<input-text class="col-50" :label="t('Ende')+' Longitude'" id="end-longitude" v-model="form"/>
+					<input-text class="col-50" label="Start Longitude" id="start-longitude" v-model="form"/>
 					<input-text class="col-50" :label="t('Ende')+' Latitude'" id="end-latitude" v-model="form"/>
+					<input-text class="col-50" :label="t('Ende')+' Longitude'" id="end-longitude" v-model="form"/>
 				</div>
 
 				<!-- DOWNLOAD -->
@@ -53,13 +53,13 @@
 
 	<script setup>
 
-		import { ref, onMounted, useTemplateRef, inject, computed } from 'vue';
+		import { ref, onMounted, inject } from 'vue';
 		import { useConfig } from '@global/composables/useConfig';
 		import { useLanguage } from '@global/composables/useLanguage';
 
 		import { Map, View } from 'ol/index.js';
  		import { Fill, Stroke, Style, Circle as CircleStyle } from 'ol/style.js';
-		import { Point, Polygon, Circle } from 'ol/geom.js';
+		import { Point, Polygon } from 'ol/geom.js';
 		import { useGeographic, toLonLat } from 'ol/proj.js';
 
 		import TileLayer from 'ol/layer/Tile.js';
@@ -67,9 +67,7 @@
 
 		import OSM from 'ol/source/OSM.js';
 		import Feature from 'ol/Feature.js';
-		import Collection from 'ol/Collection.js';
 		import VectorSource from 'ol/source/Vector.js';
-		import {boundingExtent} from 'ol/extent.js';
 		import {DragBox, Select, Translate} from 'ol/interaction.js';
 		import {platformModifierKeyOnly} from 'ol/events/condition.js';
 
@@ -266,11 +264,18 @@
 
 		function updateCoordinates(longLat) {
 
+			// start must be bottom left, end must be top right
+			const minLongitude = Math.min(longLat[0][0], longLat[2][0]);
+			const maxLongitude = Math.max(longLat[0][0], longLat[2][0]);
+			const minLatitude = Math.min(longLat[0][1], longLat[2][1]);
+			const maxLatitude = Math.max(longLat[0][1], longLat[2][1]);
+
+
 			// update form
-			form.value.start_longitude = longLat[0][0];
-			form.value.start_latitude = longLat[0][1];
-			form.value.end_longitude = longLat[2][0];
-			form.value.end_latitude = longLat[2][1];
+			form.value.start_longitude = minLongitude;
+			form.value.start_latitude = minLatitude;
+			form.value.end_longitude = maxLongitude;
+			form.value.end_latitude = maxLatitude;
 		}
 
 		function clearCoordinates() {

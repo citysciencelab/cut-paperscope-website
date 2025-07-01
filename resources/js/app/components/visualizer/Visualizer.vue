@@ -23,7 +23,7 @@
 
 	<script setup>
 
-		import { ref, onMounted, onUnmounted, watch, provide } from 'vue';
+		import { ref, onMounted, onUnmounted, watch, provide, nextTick } from 'vue';
 		import { useRoute } from 'vue-router';
 		import { useApi } from '@global/composables/useApi';
 		import { useConfig } from '@global/composables/useConfig';
@@ -40,7 +40,7 @@
 
 		const route = useRoute();
 		const { apiGetSlug } = useApi();
-		const { baseUrl } = useConfig();
+		const { baseUrl, tilesetUrl } = useConfig();
 
 		const navi = ref(null);
 
@@ -55,7 +55,6 @@
 		var pollingInterval = 0;
 		var updateTimestamp = 0;
 
-		provide('project', project);
 
 		function loadProject() {
 
@@ -64,24 +63,27 @@
 			}
 		}
 
+
 		function onProjectLoaded(data) {
 
 			project.value = data;
 			mapping.value = data.mapping;
 
+			initMap();
+			initBroadcast();
+
 			u('.header-logo').append('<p class="header-logo-title">'+data.title+'</p>');
 			navi.value?.focus();
-			initBroadcast();
-			updateScene();
 		}
+
 
 		function updateProject() {
 
 			apiGetSlug('project' ,data => {
 
 				// update only if changed
-				if(updateTimestamp == data.updated_at) { return; }
-				updateTimestamp = data.updated_at;
+				//if(updateTimestamp == data.updated_at) { return; }
+				//updateTimestamp = data.updated_at;
 
 				project.value = data;
 				mapping.value = data.mapping;
@@ -92,12 +94,17 @@
 		}
 
 
+		provide('project', project);
+		onMounted(loadProject);
+
+
 		/////////////////////////////////
 		// MAP
 		/////////////////////////////////
 
 		const mapLoaded = ref(false);
 		var map = null;
+
 
 		async function initMap() {
 
@@ -119,16 +126,43 @@
 				navigationInstructionsInitiallyVisible: false,
 			});
 
+			// update map content
+			initArea();
+			await useTerrain();
+			await useHamburgMap();
 			await useHamburg3D();
 
 			// map settings
-			map.clock.currentTime = Cesium.JulianDate.fromIso8601("2013-12-25T12:00:00Z");
-			map.scene.postProcessStages.fxaa.enabled = true;
+			map.clock.currentTime = Cesium.JulianDate.fromIso8601("2013-06-25T12:00:00Z");
+			map.scene.globe.tileCacheSize = 1000;
 			map.scene.globe.depthTestAgainstTerrain = true;
+			map.scene.light.intensity = 3.2;
+			map.scene.light.color = Cesium.Color.fromCssColorString('#F9E6C7');
 			mapLoaded.value = true;
 
-			loadProject();
+			// testing
+			// map.screenSpaceEventHandler.setInputAction(async function (event) {
+
+			// 	const pickedFeature = map.scene.pick(event.position);
+
+			// 	if(pickedFeature.boundingRectangle) {
+			// 		const rectangle = pickedFeature.boundingRectangle;
+			// 		showRectangle(rectangle, Cesium.Color.RED.withAlpha(0.3));
+			// 		return;
+			// 	}
+
+			// 	const boundings = pickedFeature.getProperty('boundings');
+			// 	if(!boundings) { return; }
+			// 	const min = boundings.min;
+			// 	const max = boundings.max;
+
+			// 	// check for intersection
+			// 	const rectangle = Cesium.Rectangle.fromDegrees(min[1], min[0], max[1], max[0]);
+			// 	showRectangle(rectangle, Cesium.Color.YELLOW.withAlpha(0.1));
+    		// },
+			// Cesium.ScreenSpaceEventType.LEFT_CLICK);
 		}
+
 
 		function destroy() {
 
@@ -136,47 +170,101 @@
 			u('.header-logo-title').remove();
 		}
 
-		onMounted(initMap);
+
 		onUnmounted(destroy);
 
 
 		/////////////////////////////////
-		// HAMBURG 3D
+		// TILESETS
 		/////////////////////////////////
 
 		var hamburgTilesets = [];
 		const terrainLoaded = ref(false);
 
-		async function useHamburg3D() {
 
-			// add terrain
-			const terrain = "https://daten-hamburg.de/gdi3d/datasource-data/Gelaende";
-			const terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(terrain);
-			map.scene.terrainProvider = terrainProvider;
+		async function useTerrain() {
 
-			// add 2d map
+			const url = "https://daten-hamburg.de/gdi3d/datasource-data/Gelaende";
+			const terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(url);
+			const terrain = new Cesium.Terrain(terrainProvider);
+
+			// wait for terrain to load
+			map.scene.globe.tileLoadProgressEvent.addEventListener(function (queuedTileCount) {
+				if(map.scene.globe.tilesLoaded && !terrainLoaded.value) {
+					terrainLoaded.value = true;
+					updateScene();
+				}
+			});
+
+			map.scene.setTerrain(terrain);
+		}
+
+
+		async function useHamburgMap() {
+
+			// bugfix: intercept missing tiles on geodienste.hamburg.de
+			var orgFunc = Cesium.ImageryLayer.prototype._requestImagery;
+			Cesium.ImageryLayer.prototype._requestImagery = function(img) {
+				if((img.x == 1 || img.x == 2) && img.y == 0) { img.x = 4; img.level = 2; }
+				return orgFunc.call(this, img);
+			}
+
 			const hamburgMap = "https://geodienste.hamburg.de/HH_WMS_Cache_Stadtplan";
 			const provider = new Cesium.WebMapServiceImageryProvider({
 				url : hamburgMap,
 				layers : 'stadtplan',
-				rectangle : Cesium.Rectangle.fromDegrees(8.5, 53.5, 10.5, 54.5),
+				rectangle : Cesium.Rectangle.fromDegrees(9.8, 53.5, 10.5, 53.8),
 				parameters: { format: 'image/png', SINGLETILE: false }
 			});
+
 			const imageryLayer = new Cesium.ImageryLayer(provider);
 			map.scene.imageryLayers.add(imageryLayer);
+		}
 
-			// add 3d tileset
-			for(var i=1; i<6; i++) {
-				const url = "https://daten-hamburg.de/gdi3d/datasource-data/LoD3_tex20cm_Area"+i+"/tileset.json"
-				const tileset = await Cesium.Cesium3DTileset.fromUrl(url);
+
+		async function useHamburg3D() {
+
+			// LOD3
+			var tilesets = [];
+			for(var i=1; i<6; i++) { tilesets.push(tilesetUrl.replace('1/', i+"/")); }
+
+			// LOD2
+			//var tilesets = ["https://daten-hamburg.de/gdi3d/datasource-data/LoD2/tileset.json"];
+
+			// load tilesets
+			for(var i=0; i<tilesets.length; i++) {
+				const tileset = await Cesium.Cesium3DTileset.fromUrl(tilesets[i]);
 				map.scene.primitives.add(tileset);
 				hamburgTilesets.push(tileset);
+				tileset.tileLoad.addEventListener(entityTileIntersection);
 			}
+		}
 
-			setTimeout(()=> {
-				terrainLoaded.value = true;
-				updateScene();
-			},5000);
+
+		function showRectangle(rectangle, color) {
+
+			const west = Cesium.Math.toDegrees(rectangle.west);
+			const south = Cesium.Math.toDegrees(rectangle.south);
+			const east = Cesium.Math.toDegrees(rectangle.east);
+			const north = Cesium.Math.toDegrees(rectangle.north);
+
+			const coords = [
+				west, south,
+				west, north,
+				east, north,
+				east, south
+			];
+
+			map.entities.add({
+				polygon: {
+					hierarchy: Cesium.Cartesian3.fromDegreesArray(coords),
+					height: 0.0,
+					extrudedHeight: 50.0, // 50 meters tall box
+					material: color ?? Cesium.Color.RED.withAlpha(0.3),
+					outline: true,
+					outlineColor: Cesium.Color.PINK
+				}
+			});
 		}
 
 
@@ -185,32 +273,66 @@
 		/////////////////////////////////
 
 		const areaInitialized = ref(false);
+		const entities = ref([]);
 
-		function updateScene() {
+		async function updateScene() {
 
 			if(!project.value || !map || !terrainLoaded.value) { return; }
 
-			console.log('updateScene');
-
 			// init area
 			if(!areaInitialized.value) {
-				drawArea();
+				initArea();
 				clipArea();
 				areaInitialized.value = true;
 			}
 
 			// remove all old entities
 			map.entities.removeAll();
+			entities.value = [];
 
 			// iterate all items in scene
 			for(const f of project.value.scene?.features ?? []) {
 
-				var item = new PSObject(f, mapping.value);
-				if(!item.mapping) { continue; }
+				var psObject = new PSObject(f, map, mapping.value);
+				if(!psObject.mapping) { continue; }
 
-				// add to 3d map
-				const entity = item.get3D(map.scene);
-				map.entities.add(entity);
+				const entity = psObject.addEntity();
+				entities.value.push(entity);
+			}
+
+			// update boundings
+			hamburgTilesets.forEach(set => set._selectedTiles.forEach(entityTileIntersection) );
+		}
+
+
+		function entityTileIntersection(tile) {
+
+			// skip if tile not intersecting with area or very large
+			const rectangle = tile.boundingVolume.rectangle;
+			if(rectangle.width * rectangle.height * 1000 > 0.0005) { return; }
+			if(!Cesium.Rectangle.simpleIntersection(rectangle, areaRectangle)) { return; }
+
+			// iterate all features
+			for(let i=0; i<tile.content.featuresLength; i++) {
+
+				// get boundings of feature
+				const feature = tile.content.getFeature(i);
+				const boundings = feature.getProperty("boundings");
+				if(!boundings) { feature.color = Cesium.Color.RED; continue; }
+				const min = boundings.min;
+				const max = boundings.max;
+
+				// check for intersection
+				const rectangle = Cesium.Rectangle.fromDegrees(min[1], min[0], max[1], max[0]);
+				for(let j=0; j < entities.value.length; j++) {
+
+					const entityRectangle = entities.value[j].boundingRectangle;
+					if(!entityRectangle) { continue; }
+
+					const intersect = Cesium.Rectangle.intersection(rectangle, entityRectangle);
+					if(intersect) { feature.show = false; break; }
+					feature.show = true;
+				}
 			}
 		}
 
@@ -219,18 +341,21 @@
 		// AREA
 		/////////////////////////////////
 
-		function drawArea() {
+		var areaRectangle = null;
 
-			const start = [project.value.start_longitude, project.value.start_latitude];
-			const end = [project.value.end_longitude, project.value.end_latitude];
+		function initArea() {
 
-			// 3D area
+			var start = [project.value.start_latitude, project.value.start_longitude];
+			var end = [project.value.end_latitude, project.value.end_longitude];
+			areaRectangle = Cesium.Rectangle.fromDegrees(start[1], start[0], end[1], end[0]);
+			//showRectangle(areaRectangle, Cesium.Color.RED.withAlpha(0.3));
+
 			const positions = [
-				Cesium.Cartesian3.fromDegrees(start[0], start[1]),
-				Cesium.Cartesian3.fromDegrees(start[0], end[1]),
-				Cesium.Cartesian3.fromDegrees(end[0], end[1]),
-				Cesium.Cartesian3.fromDegrees(end[0], start[1]),
-				Cesium.Cartesian3.fromDegrees(start[0], start[1]),
+				Cesium.Cartesian3.fromDegrees(start[1], start[0]),
+				Cesium.Cartesian3.fromDegrees(start[1], end[0]),
+				Cesium.Cartesian3.fromDegrees(end[1], end[0]),
+				Cesium.Cartesian3.fromDegrees(end[1], start[0]),
+				Cesium.Cartesian3.fromDegrees(start[1], start[0]),
 			];
 
 			const instance = new Cesium.GeometryInstance({
@@ -250,6 +375,7 @@
 
 		function clipArea() {
 
+			return; // not needed for now
 			if(hamburgTilesets.length == 0) { return;}
 
 			hamburgTilesets.forEach(t => {
@@ -300,11 +426,11 @@
 		// BROADCAST
 		/////////////////////////////////
 
-		const { socketConnected, subscribeChannel } = useBroadcast();
+		const { socketConnected, subscribePrivateChannel } = useBroadcast();
 
 		function initBroadcast() {
 
-			subscribeChannel('project.'+project.value.slug, onChannelMessage);
+			subscribePrivateChannel('project.'+project.value.slug, onChannelMessage);
 		}
 
 		function onChannelMessage(event, data) {
@@ -317,6 +443,7 @@
 			// activate polling mode if no websocket connection
 			clearInterval(pollingInterval);
 			if(!value) {
+				console.log('no socket connection, start polling');
 				pollingInterval = setInterval(()=>{ updateProject(); }, 3000);
 			}
 		});

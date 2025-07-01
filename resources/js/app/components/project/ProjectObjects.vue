@@ -57,7 +57,10 @@
 					<input-text class="col-50" v-model="editMapping.attributes[i].value"/>
 					<btn icon="btn-delete" @click="deleteAttribute(i)"/>
 				</div>
-				<btn :label="t('Attribut hinzufügen')" icon="btn-add" @click="addAttribute"/>
+				<btn :label="t('Attribut hinzufügen')" class="small secondary" icon="btn-add" @click="addAttribute"/>
+				<div class="form-row-buttons">
+					<btn :label="t('Bestätigen')" class="small"  @click="editPopup.close()"/>
+				</div>
 			 </popup>
 
 			<!-- DELETE -->
@@ -168,7 +171,7 @@
 				color: source.split('-')[1],
 				target: 'shape-2d',
 				props: {
-					fill: '#ff0000',
+					fill: '#B8B7B5',
 					stroke: '#7F7F7F',
 					height: 20,
 					file: undefined,

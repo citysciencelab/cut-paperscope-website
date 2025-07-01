@@ -312,14 +312,6 @@ class BackendController extends Controller {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	public function getInputJson(mixed $json): string|bool {
-
-		if(empty($json) || $json=='[]' || (is_array($json) && count($json)==0)) { return '{}'; }
-
-		return json_encode($json);
-	}
-
-
 	public function saveManyRelation(string $relationName, mixed $validated, BaseModel $target, array $pivotAttrs = []): void {
 
 		// wait for saved model to always have an id

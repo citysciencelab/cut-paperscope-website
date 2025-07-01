@@ -61,6 +61,8 @@
 
 			// html
 			type: 			{ type: String, default: 'text' },		// html input type: text, password, email, number, ...
+			min: 			{ type: Number, default: null },		// html min attribute (only for number)
+			max: 			{ type: Number, default: null },		// html max attribute (only for number)
 			readonly: 		{ type: Boolean },						// html readonly attribute
 			autofocus: 		{ type: Boolean },						// html autofocus attribute
 			autocomplete: 	{ type: Boolean, default: true },		// html autocomplete attribute
@@ -90,6 +92,8 @@
 			autocomplete: 	props.autocomplete?'on':'off',
 			maxlength: 		props.maxLength>0 ? props.maxLength : null,
 			step: 			props.type=='number' ? '0.1' : null,
+			min: 			props.type=='number' && props.min != null ? props.min : null,
+			max: 			props.type=='number' && props.max ? props.max : null,
 		}));
 
 

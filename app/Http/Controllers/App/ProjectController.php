@@ -18,9 +18,11 @@
 
 	// App
 	use App\Models\App\Project;
+	use App\Models\App\Simulation;
 	use App\Http\Resources\ProjectResource;
 	use App\Http\Resources\ProjectListResource;
 	use App\Http\Resources\ProjectSceneResource;
+	use App\Http\Resources\SimulationListResource;
 	use App\Http\Requests\App\ProjectSaveRequest;
 	use App\Http\Requests\App\ProjectSceneSaveRequest;
 	use App\Jobs\Base\ProcessSharingUpload;
@@ -138,8 +140,8 @@ class ProjectController extends AppController {
 		$project = Project::whereSlug($validated->slug)->first();
 		if(!$project) { return $this->responseError(); }
 
-		$start = [$project->start_longitude, $project->start_latitude];
-		$end = [$project->end_longitude, $project->end_latitude];
+		$end = [$project->end_longitude, $project->start_latitude];
+		$start = [$project->start_longitude, $project->end_latitude];
 
 		// create geojson
 		$geojson = [
@@ -183,6 +185,7 @@ class ProjectController extends AppController {
 	}
 
 
+
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //	GEOJSON
@@ -203,6 +206,24 @@ class ProjectController extends AppController {
 
 		echo json_encode($geojson, JSON_PRETTY_PRINT);
 	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	SIMULATION
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function getSimulation(string $slug): JsonResponse {
+
+		$project = Project::whereSlug($slug)->first();
+		$simulations = Simulation::where('project_id', $project->id)->where('public', true)->orderBy('created_at', 'desc')->get();
+
+		return $this->responseList($simulations, SimulationListResource::class);
+	}
+
 
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +314,7 @@ class ProjectController extends AppController {
 			'styles' => '',
 			'format' => 'image/jpeg',
 			'layers' => 'stadtplan',
-			'bbox' => implode(',',[$sLong, $eLat, $eLong, $sLat]),
+			'bbox' => implode(',', [$sLong, $sLat, $eLong, $eLat]),
 			'width' => $ratio < 1 ? intval(1024 * $ratio) : 1024,
 			'height' => $ratio >= 1 ? intval(1024 / $ratio) : 1024,
 			'srs' => 'EPSG:4326',
