@@ -8,6 +8,9 @@
 
 	namespace App\Jobs;
 
+	// Laravel
+	use Illuminate\Contracts\Queue\ShouldBeUnique;
+
 	// App
 	use App\Jobs\Base\BaseJob;
 
@@ -20,8 +23,15 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-class RunSimulation extends BaseJob
+class RunSimulation extends BaseJob implements ShouldBeUnique
 {
+
+
+	public function uniqueId(): string {
+
+		return 'run-simulation-' . $this->target->id;
+	}
+
 
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +56,7 @@ class RunSimulation extends BaseJob
 		$command .= "paperscope-simulation:latest ";
 		$command .= "python3 -m paperscope_simulation " . $this->target->id;
 
-		//exec($command, $output, $return_var);
+		exec($command, $output, $return_var);
 	}
 
 

@@ -132,9 +132,11 @@
 
 		function openFirstTab() {
 
-			const tab = route.query.tab || 'info';
-			const target = u('.project-navi').find(`[data-tab="${tab}"]`).first();
-			if(target) { target.click(); }
+			setTimeout(() => {
+				const tab = route.query.tab || 'info';
+				const target = u('.project-navi').find(`[data-tab="${tab}"]`).first();
+				target?.click();
+			}, 500);
 		}
 
 

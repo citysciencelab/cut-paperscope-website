@@ -27,9 +27,10 @@
 					<br>
 					<a :href="baseUrl+'simulation/project/'+result.id" target="_blank">Download QGIS</a><br>
 				</template>
+
 				<!-- UMP -->
 				<template v-else-if="result.status=='successful'">
-					<span v-if="isVisualizer" class="textlink" @click="showUmpSimulation(props.result.jobID)">Anzeigen</span>
+					<span v-if="isVisualizer" class="textlink" @click="showSimulation(props.result.jobID, true)">Anzeigen</span>
 					<br>
 					<a v-if="result.links?.length" :href="result.links[0].href" target="_blank" rel="noreferrer noopener">Download data</a><br>
 				</template>
@@ -89,7 +90,6 @@
 		/////////////////////////////////
 
 		const showSimulation = inject('showSimulation');
-		const showUmpSimulation = inject('showUmpSimulation');
 
 
 	</script>

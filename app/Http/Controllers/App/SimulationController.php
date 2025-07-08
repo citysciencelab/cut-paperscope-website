@@ -14,6 +14,8 @@
 	use Illuminate\Http\Response;
 	use Illuminate\Http\RedirectResponse;
 	use Illuminate\Support\Facades\Auth;
+	use Illuminate\Support\Facades\Storage;
+	use Illuminate\Support\Facades\Cache;
 
 	// App
 	use App\Models\App\Simulation;
@@ -21,6 +23,7 @@
 	use App\Http\Resources\SimulationListResource;
 	use App\Http\Requests\App\SimulationExecuteRequest;
 	use App\Http\Requests\App\SimulationSaveRequest;
+	use App\Http\Requests\App\SimulationWmsRequest;
 	use App\Jobs\ProcessSimulationUpload;
 	use App\Jobs\RunSimulation;
 
@@ -51,44 +54,38 @@ class SimulationController extends AppController {
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//	GET
+//	SIMULATION DATA
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	public function image(string $id): Response {
+	public function getImage(string $id): Response {
 
 		// get simulation
 		$simulation = Simulation::find($id);
 		if(!$simulation) { return response()->make(null, 404); }
 
-		// get image file
-		$imgUrl = "http://localhost:8088/result/".$id;
-		$imgFile = file_get_contents($imgUrl);
-		if(!$imgFile) { return response()->make(null, 404); }
+		// get file
+		$file = Storage::get('simulations/' . $simulation->id . '/umep/layer/heatmap_layer.jpg');
 
-		// return image response
-		return response($imgFile, 200)
-			->header('Content-Type', 'image/jpg')
+		return response($file, 200)
+			->header('Content-Type', 'image/jpeg')
 			->header('Cache-Control', 'no-cache, no-store, must-revalidate')
 			->header('Pragma', 'no-cache')
 			->header('Expires', '0');
 	}
 
 
-	public function project(string $id): Response {
+	public function getProject(string $id): Response {
 
 		// get simulation
 		$simulation = Simulation::find($id);
 		if(!$simulation) { return response()->make(null, 404); }
 
-		// get image file
-		$zipUrl = "http://localhost:8088/project/".$id;
-		$zipFile = file_get_contents($zipUrl);
-		if(!$zipFile) { return response()->make(null, 404); }
+		// get file
+		$file = Storage::get('simulations/' . $simulation->id . '/project.zip');
 
-		// return image response
-		return response($zipFile, 200)
+		return response($file, 200)
 			->header('Content-Type', 'application/zip')
 			->header('Content-Disposition', 'attachment; filename="project_'.$id.'.zip"')
 			->header('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -145,11 +142,18 @@ class SimulationController extends AppController {
 		// get simulation
 		$simulation = Simulation::where(['id' => $validated->id, 'project_id' => $validated->project_id])->first();
 		if(!$simulation) { return $this->responseError(404, "Simulation not found"); }
+		$oldStatus = $simulation->status;
 
 		// update simulation
 		$simulation->params = $validated->params;
 		$simulation->status = $validated->status;
 		$simulation->save();
+
+		// trigger a waiting simulation
+		if($oldStatus == 'running' && $simulation->status == 'successful') {
+			$newSimulation = Simulation::whereStatus('waiting')->first();
+			if($newSimulation) { RunSimulation::dispatch($newSimulation); }
+		}
 
 		return $this->responseData($simulation);
 	}
@@ -179,26 +183,24 @@ class SimulationController extends AppController {
 
 		// inputs
 		$process['inputs'] = [
-			[
-				'resolution' => [
-					'title' => 'Resolution',
-					'description' => 'Resolution of the simulation in meters.',
-					'required' => true,
-					'maxOccurrences' => 1,
-					'minOccurrences' => 1,
-					'metadata' => null,
-					'schema' => [ 'type' => 'number', 'minimum' => 5, 'maximum' => 50]
-				],
-				'project_id' => [
-					'title' => 'Project ID',
-					'description' => 'ID of the PaperScope project to run the simulation on.',
-					'required' => true,
-					'maxOccurrences' => 1,
-					'minOccurrences' => 1,
-					'metadata' => null,
-					'schema' => [ 'type' => 'string', 'format' => 'uuid']
-				],
-			]
+			'resolution' => [
+				'title' => 'Resolution',
+				'description' => 'Resolution of the simulation in meters.',
+				'required' => true,
+				'maxOccurrences' => 1,
+				'minOccurrences' => 1,
+				'metadata' => null,
+				'schema' => [ 'type' => 'number', 'minimum' => 5, 'maximum' => 50]
+			],
+			'project_id' => [
+				'title' => 'Project ID',
+				'description' => 'ID of the PaperScope project to run the simulation on.',
+				'required' => true,
+				'maxOccurrences' => 1,
+				'minOccurrences' => 1,
+				'metadata' => null,
+				'schema' => [ 'type' => 'string', 'format' => 'uuid']
+			],
 		];
 
 		// example
@@ -329,6 +331,116 @@ class SimulationController extends AppController {
 			"ensembles" => [],
 		];
 	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	OGC API RESULT
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function getResult(SimulationWmsRequest $request): Response {
+
+        $validated = $request->validated();
+
+        $width = $validated->width;
+        $height = $validated->height;
+        $bbox = explode(',', $validated->bbox); 	// [minLon, minLat, maxLon, maxLat]
+        $layers = explode(',', $validated->layers);
+
+        // prepare a transparent canvas
+        $destImage = imagecreatetruecolor($width, $height);
+        imagesavealpha($destImage, true);
+        $transparentColor = imagecolorallocatealpha($destImage, 0, 0, 0, 127);
+        imagefill($destImage, 0, 0, $transparentColor);
+
+        // get simulation
+        $simulation = Simulation::with('project')->find($layers[0]);
+        if(!$simulation || !$simulation->project) {
+            return response()->make('Simulation or associated project not found', 404);
+        }
+
+		// get project
+        $project = $simulation->project;
+        $projectBbox = [
+            'minLon' => (float)$project->start_longitude,
+            'minLat' => (float)$project->start_latitude,
+            'maxLon' => (float)$project->end_longitude,
+            'maxLat' => (float)$project->end_latitude,
+        ];
+
+        // check for intersection
+        $reqBbox = array_map('floatval', $bbox);
+        $intersects = ($reqBbox[0] < $projectBbox['maxLon'] && $reqBbox[2] > $projectBbox['minLon'] &&
+                       $reqBbox[1] < $projectBbox['maxLat'] && $reqBbox[3] > $projectBbox['minLat']);
+
+		// return transparent
+	   	if(!$intersects) {
+            ob_start();
+            imagepng($destImage);
+            $imageData = ob_get_clean();
+            imagedestroy($destImage);
+            return response($imageData, 200)->header('Content-Type', 'image/png');
+        }
+
+        // load image
+		$sourceImage = Cache::rememberForever('simulation-'.$simulation->id.'-heatmap', function() use ($simulation) {
+			$file = Storage::get('simulations/' . $simulation->id . '/umep/layer/heatmap_layer.jpg');
+			if(!$file) { null; }
+			return imagecreatefromstring($file);
+		});
+
+		if(!$sourceImage) {
+            return response()->make('Source image not found or invalid', 404);
+        }
+
+        // calculate dimensions
+        $sourceWidth = imagesx($sourceImage);
+        $sourceHeight = imagesy($sourceImage);
+        $projectLonRange = $projectBbox['maxLon'] - $projectBbox['minLon'];
+        $projectLatRange = $projectBbox['maxLat'] - $projectBbox['minLat'];
+        $reqLonRange = $reqBbox[2] - $reqBbox[0];
+        $reqLatRange = $reqBbox[3] - $reqBbox[1];
+
+        // Find the intersection bounding box
+        $interBbox = [
+            max($reqBbox[0], $projectBbox['minLon']),
+            max($reqBbox[1], $projectBbox['minLat']),
+            min($reqBbox[2], $projectBbox['maxLon']),
+            min($reqBbox[3], $projectBbox['maxLat'])
+        ];
+
+        // crop from the source image (in pixels)
+        $srcX = floor(($interBbox[0] - $projectBbox['minLon']) / $projectLonRange * $sourceWidth);
+        $srcY = floor(($projectBbox['maxLat'] - $interBbox[3]) / $projectLatRange * $sourceHeight);
+        $srcW = floor(($interBbox[2] - $interBbox[0]) / $projectLonRange * $sourceWidth);
+        $srcH = floor(($interBbox[3] - $interBbox[1]) / $projectLatRange * $sourceHeight);
+
+        // place cropped part onto the destination tile (in pixels)
+        $destX = ceil(($interBbox[0] - $reqBbox[0]) / $reqLonRange * $width);
+        $destY = ceil(($reqBbox[3] - $interBbox[3]) / $reqLatRange * $height);
+        $destW = ceil(($interBbox[2] - $interBbox[0]) / $reqLonRange * $width);
+        $destH = ceil(($interBbox[3] - $interBbox[1]) / $reqLatRange * $height);
+
+        imagecopyresampled(
+            $destImage, $sourceImage,
+            $destX, $destY, $srcX, $srcY,
+            $destW, $destH, $srcW, $srcH
+        );
+
+        // output image
+        ob_start();
+        imagepng($destImage);
+        $imageData = ob_get_clean();
+
+        imagedestroy($sourceImage);
+        imagedestroy($destImage);
+
+        return response($imageData, 200)->header('Content-Type', 'image/png');
+    }
+
 
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */

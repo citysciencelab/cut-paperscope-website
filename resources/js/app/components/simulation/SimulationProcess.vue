@@ -101,7 +101,7 @@
 		});
 
 		const { t } = useLanguage();
-		const { apiGet, apiPost } = useApi();
+		const { apiGet, apiGetResponse, apiPost } = useApi();
 		const { getProcess, executeProcess, getJobs } = useUmp();
 
 
@@ -119,21 +119,24 @@
 			form.value = { id: props.process.id };
 			inputs.value = [];
 
-			// skip if internal simulation
 			if(props.process.paperscope) {
-				inputs.value = props.process.inputs || [];
-				form.value.resolution = 10;
-				return;
+
+				apiGetResponse('ogc.process',{model:props.process.id}, r => onProcessLoaded(r.data));
 			}
+			else {
 
-			getProcess(props.process.id).then(r => {
+				getProcess(props.process.id).then(onProcessLoaded).catch(e => console.error(e));
+			}
+		}
 
-				inputs.value = r.inputs;
 
-				// reshape form
-				Object.keys(r.example.inputs).forEach(key => { form.value[key] = r.example.inputs[key]; });
+		function onProcessLoaded(data) {
 
-			}).catch(e => console.error(e));
+			inputs.value = data.inputs;
+
+			// reshape form
+			Object.keys(data.example.inputs).forEach(key => { form.value[key] = data.example.inputs[key]; });
+			form.value.project_id = props.project.id;
 		}
 
 

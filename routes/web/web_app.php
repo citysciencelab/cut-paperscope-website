@@ -44,8 +44,8 @@
 	Route::get('project/map', [ProjectController::class,'getMap'])->name('project.map');
 
 	// simulation
-	Route::get('simulation/image/{id}', [SimulationController::class,'image'])->name('simulation.image');
-	Route::get('simulation/project/{id}', [SimulationController::class,'project'])->name('simulation.project');
+	Route::get('simulation/image/{id}', [SimulationController::class,'getImage'])->name('simulation.image');
+	Route::get('simulation/project/{id}', [SimulationController::class,'getProject'])->name('simulation.project');
 
 	// Force all routes to Vue
 	Route::fallback([AppController::class,'showIndex'])->name('index.vue');

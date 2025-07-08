@@ -22,7 +22,7 @@
 
 		<popup ref="simulationPopup" class="popup-simulation">
 
-			<p v-if="psSimulation" class="textlink" style="margin-bottom:30px" @click="showSimulation(null)">Aktuelle Simulation ausblenden</p>
+			<p v-if="simulationResult" class="textlink" style="margin-bottom:30px" @click="showSimulation(null)">Aktuelle Simulation ausblenden</p>
 			<simulation :project="project"/>
 
 		</popup>
@@ -149,12 +149,10 @@
 
 
 		/////////////////////////////////
-		// PAPERSCOPE SIMULATION
+		// SIMULATION
 		/////////////////////////////////
 
 		const simulationPopup = useTemplateRef('simulationPopup');
-		const psSimulation = ref(null);
-
 
 		async function openSimulation() {
 
@@ -162,62 +160,30 @@
 		}
 
 
-		function showSimulation(simulationId) {
-
-			// remove old layer
-			if(psSimulation.value) {
-				props.map.imageryLayers.remove(psSimulation.value, true);
-			}
-
-			// clear simulation
-			if(!simulationId) {
-				psSimulation.value = null;
-				simulationPopup.value.close();
-				return;
-			}
-			const file = baseUrl+'simulation/image/'+simulationId;
-
-			// create layer clipped to area
-			var start = [project.value.start_latitude, project.value.start_longitude];
-			var end = [project.value.end_latitude, project.value.end_longitude];
-			var areaRectangle = Cesium.Rectangle.fromDegrees(start[1], start[0], end[1], end[0]);
-			psSimulation.value = Cesium.ImageryLayer.fromProviderAsync(
-				Cesium.SingleTileImageryProvider.fromUrl( file, {"rectangle": areaRectangle})
-			);
-
-			// add layer
-			props.map.imageryLayers.add(psSimulation.value );
-
-			simulationPopup.value.close();
-		}
-
-		provide('showSimulation', showSimulation);
-
-
 		/////////////////////////////////
-		// UMP SIMULATION
+		// SIMULATION RESULTS
 		/////////////////////////////////
 
-		const umpSimulation = ref(null);
+		const simulationResult = ref(null);
 
-
-		function showUmpSimulation(jobId) {
+		function showSimulation(jobId,isUmp = false) {
 
 			// remove old layer
-			if(umpSimulation.value) {
-				props.map.scene.imageryLayers.remove(umpSimulation.value, true);
+			if(simulationResult.value) {
+				props.map.scene.imageryLayers.remove(simulationResult.value, true);
 			}
 
 			// clear simulation
 			if(!jobId) {
-				umpSimulation.value = null;
+				simulationResult.value = null;
 				return;
 			}
 
-			const wmsUrl = "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms";
+			// add new layer
+			const wmsUrl = isUmp ? "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms" : baseUrl+'api/ogc/result';
 			const provider = new Cesium.WebMapServiceImageryProvider({
 				url : wmsUrl,
-				layers : "CUT:"+jobId,
+				layers : isUmp ? "CUT:"+jobId : jobId,
 				parameters: {
 					format: 'image/png',
 					SINGLETILE: false,
@@ -228,13 +194,13 @@
 				}
 			});
 
-			umpSimulation.value = new Cesium.ImageryLayer(provider);
-			props.map.scene.imageryLayers.add(umpSimulation.value);
+			simulationResult.value = new Cesium.ImageryLayer(provider);
+			props.map.scene.imageryLayers.add(simulationResult.value);
 
 			simulationPopup.value.close();
 		}
 
-		provide('showUmpSimulation', showUmpSimulation);
+		provide('showSimulation', showSimulation);
 
 
 		/////////////////////////////////

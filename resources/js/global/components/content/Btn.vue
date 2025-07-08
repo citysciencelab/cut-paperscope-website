@@ -111,7 +111,7 @@
 			if(props.disabled) { return; }
 
 			// remove focus
-			root.value.blur();
+			root.value?.blur();
 
 			// blocking feature
 			if(props.blocking && isLoading.value) { return; }

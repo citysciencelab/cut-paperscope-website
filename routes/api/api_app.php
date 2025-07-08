@@ -52,6 +52,7 @@
 	Route::post('ogc/processes/{model}/execution', [SimulationController::class,'executeProcess'])->whereIn('model', $models)->name('api.ogc.process.execute');
 	Route::get('ogc/jobs', [SimulationController::class,'getJobs'])->name('api.ogc.job.list');
 	Route::get('ogc/jobs/job-{id}', [SimulationController::class,'getJob'])->name('api.ogc.job');
+	Route::get('ogc/result', [SimulationController::class,'getResult'])->name('api.ogc.result');
 
 
 
