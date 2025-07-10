@@ -51,10 +51,9 @@ class RunSimulation extends BaseJob implements ShouldBeUnique
 		$this->target->save();
 
 		// execute simulation
-		$command = "docker run ";
-		$command .= "-v ".storage_path('app/public/')."simulations:/app/storage ";
-		$command .= "paperscope-simulation:latest ";
-		$command .= "python3 -m paperscope_simulation " . $this->target->id;
+		$command = "docker exec paperscope-simulation python3 -m paperscope_simulation";
+		$command .= " " . $this->target->id;
+		$command .= " " . config('app.url');
 
 		exec($command, $output, $return_var);
 	}

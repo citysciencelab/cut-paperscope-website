@@ -180,7 +180,7 @@
 			}
 
 			// add new layer
-			const wmsUrl = isUmp ? "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms" : baseUrl+'api/ogc/result';
+			const wmsUrl = isUmp ? "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms" : baseUrl+'ogc/result';
 			const provider = new Cesium.WebMapServiceImageryProvider({
 				url : wmsUrl,
 				layers : isUmp ? "CUT:"+jobId : jobId,

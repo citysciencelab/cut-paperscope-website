@@ -385,15 +385,18 @@ class SimulationController extends AppController {
             return response($imageData, 200)->header('Content-Type', 'image/png');
         }
 
-        // load image
-		$sourceImage = Cache::rememberForever('simulation-'.$simulation->id.'-heatmap', function() use ($simulation) {
-			$file = Storage::get('simulations/' . $simulation->id . '/umep/layer/heatmap_layer.jpg');
-			if(!$file) { null; }
-			return imagecreatefromstring($file);
+        // load image data from cache or storage
+		$imageData = Cache::rememberForever('simulation-'.$simulation->id.'-heatmap-data', function() use ($simulation) {
+			return Storage::get('simulations/' . $simulation->id . '/umep/layer/heatmap_layer.jpg');
 		});
+		if(!$imageData) {
+            return response()->make('Source image not found', 404);
+        }
 
+		// create image
+		$sourceImage = imagecreatefromstring($imageData);
 		if(!$sourceImage) {
-            return response()->make('Source image not found or invalid', 404);
+            return response()->make('Source image is invalid', 404);
         }
 
         // calculate dimensions

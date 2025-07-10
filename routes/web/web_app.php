@@ -47,5 +47,8 @@
 	Route::get('simulation/image/{id}', [SimulationController::class,'getImage'])->name('simulation.image');
 	Route::get('simulation/project/{id}', [SimulationController::class,'getProject'])->name('simulation.project');
 
+	// ogc api
+	Route::get('ogc/result', [SimulationController::class,'getResult'])->name('ogc.result');
+
 	// Force all routes to Vue
 	Route::fallback([AppController::class,'showIndex'])->name('index.vue');
