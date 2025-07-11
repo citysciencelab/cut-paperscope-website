@@ -11,7 +11,7 @@
 
 		height: 		2px;
 		background: 	$colorGrayLightHover;
-		margin: 		var(--layoutUnit) 0 calc(var(--layoutUnit) * 1) 0;
+		margin: 		var(--layoutUnit) auto calc(var(--layoutUnit) * 1) auto;
 	}
 
 	.fragment-separator:last-child { display: none; }
