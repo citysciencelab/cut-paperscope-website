@@ -49,9 +49,9 @@ clear
 		envValue="$(sed -E 's/\,/\\\,/g' <<<$envValue)"
 
 		if [[ "$OSTYPE" == "darwin"* ]]; then
-			sed -i '' "s,^$envKey=.*,$envKey=$envValue,g" $envFile
+			sed -E -i '' "s,^$envKey=(\\\")?[^\\\"]*(\\\")?,$envKey=\1$envValue\2,g" $envFile
 		else
-			sed -i "s,^$envKey=.*,$envKey=$envValue,g" $envFile
+			sed -E -i "s,^$envKey=(\\\")?[^\\\"]*(\\\")?,$envKey=\1$envValue\2,g" $envFile
 		fi
 	}
 
@@ -244,11 +244,11 @@ clear
 	cp .env.example .env
 
 	# set APP_NAME
-	readinput -p "Set APP_NAME:  " -i "PaperScope" -e appName
-	replaceEnv ".env" "APP_NAME" "\"$appName\""
+	readinput -p "Set APP_NAME:  " -i "Website Laravel" -e appName
+	replaceEnv ".env" "APP_NAME" "$appName"
 
 	# read APP_URL
-	readinput -p "Set APP_URL (include 'public' on localhost):  " -i "http://localhost/paperscope/website/public/" -e appUrlRaw
+	readinput -p "Set APP_URL (include 'public' on localhost):  " -i "http://localhost/client/project/public/" -e appUrlRaw
 
 	# append trailing "/" to APP_URL
 	[[ "${appUrlRaw}" != */ ]] && appUrlRaw="${appUrlRaw}/"
@@ -256,7 +256,6 @@ clear
 	# set APP_URL
 	appUrl="$(sed -E 's/\//\\\//g' <<<$appUrlRaw)"
 	replaceEnv ".env" "APP_URL" "$appUrl"
-	replaceTextInFile "tests/Backstop/backstop.config.cjs" "https://wwww.paperscope.de/" "$appUrl"
 
 	# get domain from APP_URL
 	appDomain="$(sed -E 's/^(http[s]?:\/\/)([a-z0-9:.-]{1,})(.*)/\2/' <<<$appUrlRaw)"
@@ -265,26 +264,172 @@ clear
 	# set SESSION_DOMAIN
 	replaceEnv ".env" "SESSION_DOMAIN" "$appDomain"
 
-	# set ROOT_USER
-	readinput -p "Set mail for ROOT user:  " -i "admin@paperscope.de" -e rootUser
-	replaceEnv ".env" "ROOT_EMAIL" "\"$rootUser\""
-
 	# set ROOT_PASSWORD
 	readinput -p "Set password for ROOT user:  " -e rootPassword
-	replaceEnv ".env" "ROOT_PASSWORD" "\"$rootPassword\""
+	replaceEnv ".env" "ROOT_PASSWORD" "$rootPassword"
 
 	# set database credentials
 	readinput -p "Name for database:  " -e dbName
-	replaceEnv ".env" "DB_DATABASE" "\"$dbName\""
+	replaceEnv ".env" "DB_DATABASE" "$dbName"
 	readinput -p "Username for database:  " -e dbUser
-	replaceEnv ".env" "DB_USERNAME" "\"$dbUser\""
+	replaceEnv ".env" "DB_USERNAME" "$dbUser"
 	readinput -p "Password for database:  " -e dbPassword
-	replaceEnv ".env" "DB_PASSWORD" "\"$dbPassword\""
+	replaceEnv ".env" "DB_PASSWORD" "$dbPassword"
 
 	# set queue names
 	queueSlug=$(slugify "${appName}_queue")
 	replaceEnv ".env" "SQS_QUEUE" "$queueSlug"
 	replaceEnv ".env" "REDIS_QUEUE" "$queueSlug"
+
+
+
+#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#/
+#/	PROJECT FEATURES
+#/
+#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	printBanner "PROJECT FEATURES"
+
+	##################################
+	# FEATURE_BACKEND
+	##################################
+
+	readinput -p "Use feature BACKEND (y/n):  " -e featureBackend
+	featureBackend="$(convertToBool "$featureBackend")"
+	replaceEnv ".env" "FEATURE_BACKEND" "$featureBackend"
+
+	if [[ "$featureBackend" == "false" ]]; then
+
+		replaceTextInFile "vite.config.js" "\t'backend/backend':" "\t//'backend/backend':"
+		replaceTextInFile "vite.config.js" "\t'css/backend':" "\t//'css/backend':"
+		replaceTextInFile "vite.config.js" "\t'resources/js/backend/pages" "\t//'resources/js/backend/pages"
+		replaceTextInFile "vite.config.js" "\t'resources/js/backend/components" "\t//'resources/js/backend/components"
+		replaceTextInFile "vite.config.js" "\t'resources/js/backend/composables" "\t//'resources/js/backend/composables"
+
+		replaceTextInFile ".gitlab-ci.yml" "FEATURE_BACKEND: \"true\"" "FEATURE_BACKEND: \"false\""
+	fi
+
+
+	##################################
+	# FEATURE_BACKEND_RESET
+	##################################
+
+	featureBackendReset="false"
+
+	if [[ "$featureBackend" == "true" ]]; then
+
+		readinput -p "Use feature BACKEND_RESET (y/n):  " -e featureBackendReset
+		featureBackendReset="$(convertToBool "$featureBackendReset")"
+		replaceEnv ".env" "FEATURE_BACKEND_RESET" "$featureBackendReset"
+	fi
+
+	if [[ "$featureBackendReset" == "false" ]]; then
+
+		removeLineInFile "resources/js/global/pages/auth/PageLogin.vue" "link('password.forgot')"
+		replaceTextInFile "resources/js/global/routes/AuthRoutes.js" "const PageForgotPassword" "//const PageForgotPassword"
+		replaceTextInFile "resources/js/global/routes/AuthRoutes.js" "const PageResetPassword" "//const PageResetPassword"
+		replaceTextInFile "resources/js/global/routes/AuthRoutes.js" "{ path: 'password/forgot" "//{ path: 'password/forgot"
+		replaceTextInFile "resources/js/global/routes/AuthRoutes.js" "{ path: 'password/reset" "//{ path: 'password/reset"
+
+		replaceTextInFile ".gitlab-ci.yml" "FEATURE_BACKEND_RESET: \"true\"" "FEATURE_BACKEND_RESET: \"false\""
+	fi
+
+
+	##################################
+	# FEATURE_APP_ACCOUNTS
+	##################################
+
+	featureAppAccounts="false"
+
+	if [[ "$featureBackend" == "true" ]]; then
+
+		readinput -p "Use feature APP_ACCOUNTS (y/n):  " -e featureAppAccounts
+		featureAppAccounts="$(convertToBool "$featureAppAccounts")"
+		replaceEnv ".env" "FEATURE_APP_ACCOUNTS" "$featureAppAccounts"
+	fi
+
+	if [[ "$featureAppAccounts" == "false" ]]; then
+
+		removeLineInFile "resources/js/app/App.js" "components\/user\/"
+		replaceTextInFile "resources/js/app/AppRouter.js" "\\timport AuthRoutes" "\\t\/\/import AuthRoutes"
+		replaceTextInFile "resources/js/app/AppRouter.js" "\\timport UserRoutes" "\\t\/\/import UserRoutes"
+		replaceTextInFile "resources/js/app/AppRouter.js" "\\troutes = routes.concat\\(AuthRoutes\\)" "\\t\/\/routes = routes.concat(AuthRoutes)"
+		replaceTextInFile "resources/js/app/AppRouter.js" "\\troutes = routes.concat\\(UserRoutes\\)" "\\t\/\/routes = routes.concat(UserRoutes)"
+
+		removeLineInFile "resources/sass/app/app.scss" "user"
+
+		removeLineInFile "resources/js/app/components/header/HeaderNavi.vue" "<!-- AUTH -->"
+		removeLineInFile "resources/js/app/components/header/HeaderNavi.vue" "<header-navi-item v-if=\"user"
+		removeLineInFile "resources/js/app/components/header/HeaderNavi.vue" "<header-navi-item v-if=\"!user"
+		removeLineInFile "resources/js/app/components/header/HeaderNavi.vue" "useUser"
+
+		removeLineInFile "tests/PHPUnit/phpunit.xml" "<!-- APP ACCOUNTS TEST"
+		removeLineInFile "tests/PHPUnit/phpunit.xml" "APP ACCOUNTS TEST -->"
+
+		replaceTextInFile ".gitlab-ci.yml" "FEATURE_APP_ACCOUNTS: \"true\"" "FEATURE_APP_ACCOUNTS: \"false\""
+	fi
+
+
+	##################################
+	# FEATURE_SHOP
+	##################################
+
+	featureShop="false"
+
+	if [[ "$featureAppAccounts" == "true" ]]; then
+
+		readinput -p "Use feature SHOP (y/n):  " -e featureShop
+		featureShop="$(convertToBool "$featureShop")"
+		replaceEnv ".env" "FEATURE_SHOP" "$featureShop"
+	fi
+
+	if [[ "$featureShop" == "false" ]]; then
+
+		removeLineInFile "resources/js/app/App.js" "components\/shop\/"
+		removeLineInFile "resources/js/app/components/header/HeaderNavi.vue" "to=\"shop\""
+		removeLineInFile "resources/js/app/AppRouter.js" "ShopRoutes"
+
+		removeLineInFile "resources/sass/app/app.scss" "shop"
+
+		removeLineInFile "resources/js/backend/BackendRouter.js" "ShopRoutes"
+		removeLineInFile "resources/js/backend/components/navi/BackendNavi.vue" "backend.product"
+
+		removeLineInFile "tests/PHPUnit/phpunit.xml" "<!-- SHOP TEST"
+		removeLineInFile "tests/PHPUnit/phpunit.xml" "SHOP TEST -->"
+
+		replaceTextInFile ".gitlab-ci.yml" "FEATURE_SHOP: \"true\"" "FEATURE_SHOP: \"false\""
+	fi
+
+
+	##################################
+	# FEATURE_MULTI_LANG
+	##################################
+
+	readinput -p "Use feature MULTI_LANG (y/n):  " -e featureMultiLang
+	featureMultiLang="$(convertToBool "$featureMultiLang")"
+	replaceEnv ".env" "FEATURE_MULTI_LANG" "$featureMultiLang"
+
+	if [[ "$featureMultiLang" == "false" ]]; then
+
+		removeLineInFile "resources/js/app/components/header/HeaderNavi.vue" "<language-select"
+
+		removeLineInFile "database/migrations/base/model/0002_01_01_000000_create_pages_table.php" "translate("
+		removeLineInFile "database/migrations/base/model/0002_01_01_000003_create_fragments_table.php" "translate("
+		removeLineInFile "database/migrations/base/model/0002_01_01_000004_create_settings_table.php" "translate("
+		removeLineInFile "database/migrations/base/model/0003_01_01_000002_create_products_table.php" "translate("
+
+		replaceTextInFile "database/factories/App/PageFactoryData.json" "_de\":" "\":"
+		removeLineInFile "database/factories/App/FragmentFactoryData.json" "content_en"
+		replaceTextInFile "database/factories/App/FragmentFactoryData.json" "copy_de" "copy"
+		replaceTextInFile "database/factories/Backend/SettingFactoryData.json" "_de\":" "\":"
+		replaceTextInFile "database/factories/Shop/ProductFactoryData.json" "_de\":" "\":"
+
+		replaceTextInFile "database/factories/Backend/SettingFactory.php" "content_de" "content"
+
+		replaceTextInFile ".gitlab-ci.yml" "FEATURE_MULTI_LANG: \"true\"" "FEATURE_MULTI_LANG: \"false\""
+	fi
 
 
 
@@ -319,6 +464,27 @@ clear
 
 #///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #/
+#/	MISC
+#/
+#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	printBanner "MISC"
+
+	# load a dump of data if available
+	dumpFile=$(find . -maxdepth 1 -name "dump.zip")
+
+	if [[ -f "$dumpFile" ]]; then
+		readinput -p "Dump of data found. Use this data? (y/n):  " -e useDump
+		useDump="$(convertToBool "$useDump")"
+	else
+		useDump="false"
+	fi
+
+
+
+#///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#/
 #/	DEPENDENCIES
 #/
 #///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
@@ -328,8 +494,13 @@ clear
 
 	npx --yes update-browserslist-db@latest
 	rm -rf node_modules
-	npm install
-	npm audit fix
+
+	if command -v bun &>/dev/null; then
+		bun install
+	else
+		npm install
+		npm audit fix
+	fi
 
 
 	printBanner "INSTALL COMPOSER PACKAGES"
@@ -349,6 +520,11 @@ clear
 	php artisan storage:link
 	php artisan migrate:fresh --seed
 	php artisan migrate:fresh --seed --env=testing
+
+	if [[ "$useDump" == "true" ]]; then
+
+		php artisan dump:load
+	fi
 
 
 

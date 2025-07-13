@@ -114,6 +114,9 @@
 
 	test('isLocal is true on local build', async () => {
 
+		// arrange
+		window.config.base_url = 'http://localhost/test/public/';
+
 		// act
 		const {isLocal} = useConfig();
 

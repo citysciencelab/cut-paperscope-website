@@ -20,9 +20,9 @@ clear
 		envValue="$(sed -E 's/\,/\\\,/g' <<<$envValue)"
 
 		if [[ "$OSTYPE" == "darwin"* ]]; then
-			sed -i '' "s,^$envKey=.*,$envKey=$envValue,g" $envFile
+			sed -E -i '' "s,^$envKey=(\\\")?[^\\\"]*(\\\")?,$envKey=\1$envValue\2,g" $envFile
 		else
-			sed -i "s,^$envKey=.*,$envKey=$envValue,g" $envFile
+			sed -E -i "s,^$envKey=(\\\")?[^\\\"]*(\\\")?,$envKey=\1$envValue\2,g" $envFile
 		fi
 
 		echo "Updated $envKey with $envValue"
@@ -67,14 +67,14 @@ clear
 	replaceEnv ".env" "FEATURE_SHOP" "$FEATURE_SHOP"
 	replaceEnv ".env" "FEATURE_MULTI_LANG" "$FEATURE_MULTI_LANG"
 
-	# cesium
-	replaceEnv ".env" "CESIUM_ION_TOKEN" "$CESIUM_ION_TOKEN"
-
-	# reverb
+	# broadcasting
 	replaceEnv ".env" "REVERB_APP_KEY" "$REVERB_APP_KEY"
 	replaceEnv ".env" "REVERB_HOST" "$REVERB_HOST"
 	replaceEnv ".env" "REVERB_PORT" "$REVERB_PORT"
 	replaceEnv ".env" "REVERB_SCHEME" "$REVERB_SCHEME"
+
+	# api keys
+	replaceEnv ".env" "CESIUM_ION_TOKEN" "$CESIUM_ION_TOKEN"
 
 
 
