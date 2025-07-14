@@ -97,6 +97,7 @@ class ProjectController extends AppController {
 		// scene
 		$project->ratio				= $this->calculateRatio($project);
 		$project->mapping			= $validated->mapping;
+		$project->scene				= $validated->scene;
 
 		// save translatable properties
 		$lang = config('app.fallback_locale');

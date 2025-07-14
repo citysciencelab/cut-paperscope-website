@@ -14,7 +14,7 @@
 			<btn :label="t('Paper erstellen')" icon="btn-add" data-tab="paper" @click="openTab"/>
 			<btn :label="t('Objekte definieren')" icon="btn-objects" data-tab="objects" @click="openTab"/>
 			<btn :label="t('Mapping bearbeiten')" icon="btn-edit" data-tab="mapping" @click="openTab" :disabled="!form.scene"/>
-			<btn :label="t('Gäste verwalten')" icon="btn-guests" data-tab="guests" @click="openTab" disabled/>
+			<!-- <btn :label="t('Gäste verwalten')" icon="btn-guests" data-tab="guests" @click="openTab" disabled/> -->
 			<btn :label="t('Visualizer öffnen')" icon="btn-visualizer" to="visualizer" target="_blank" :params="{slug:form.slug}" v-if="form.id"/>
 			<btn :label="t('Beamer Projektion')" icon="btn-visualizer" to="beamer" target="_blank" :params="{slug:form.slug}" v-if="form.id"/>
 			<btn :label="t('Simulation')" icon="btn-simulation" data-tab="simulation" @click="openTab" :disabled="!form.scene"/>
