@@ -142,7 +142,6 @@
 
 		function submitForm() {
 
-			startPopup.value.close();
 
 			// save local simulation
 			if(props.process.paperscope) {
@@ -156,7 +155,9 @@
 					'inputs': { ...form.value, ...{'project_id': props.project.id} },
 				};
 
-				apiPost('api.ogc.process.execute',data, () =>{}, params);
+				apiPost('api.ogc.process.execute',data, () =>{
+					startPopup.value.close();
+				}, params);
 				return;
 			}
 

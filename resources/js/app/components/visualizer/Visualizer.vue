@@ -236,7 +236,7 @@
 				const tileset = await Cesium.Cesium3DTileset.fromUrl(tilesets[i]);
 				map.scene.primitives.add(tileset);
 				hamburgTilesets.push(tileset);
-				tileset.tileLoad.addEventListener(entityTileIntersection);
+				tileset.tileVisible.addEventListener(entityTileIntersection);
 			}
 		}
 

@@ -48,7 +48,7 @@ class SimulationExecuteRequest extends BaseModelSaveRequest {
 			'job_name' =>	'bail|nullable|string|max:255',
 
 			// simulation properties
-			'inputs.resolution' =>	'bail|required|integer|between:5,100',
+			'inputs.resolution' =>	'bail|required|integer|between:1,100',
 			'inputs.project_id' =>	'bail|required|uuid|exists:projects,id',
 		]);
 	}

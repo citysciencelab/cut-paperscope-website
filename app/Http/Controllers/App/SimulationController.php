@@ -190,7 +190,7 @@ class SimulationController extends AppController {
 				'maxOccurrences' => 1,
 				'minOccurrences' => 1,
 				'metadata' => null,
-				'schema' => [ 'type' => 'number', 'minimum' => 5, 'maximum' => 50]
+				'schema' => [ 'type' => 'number', 'minimum' => 1, 'maximum' => 50]
 			],
 			'project_id' => [
 				'title' => 'Project ID',
