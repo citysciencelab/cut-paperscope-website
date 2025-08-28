@@ -6,11 +6,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	namespace App\Http\Requests\App;
+	namespace App\Http\Requests\App\Simulation;
 
 	// App
 	use App\Http\Requests\Model\BaseModelSaveRequest;
-	use App\Helper\SimulationRegistry;
 
 
 
@@ -21,11 +20,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-class SimulationSaveRequest extends BaseModelSaveRequest {
+class UmepHeatIslandExecuteRequest extends BaseModelSaveRequest {
 
 
 	protected $target = "simulations";
 	protected $targetClass = \App\Models\App\Simulation::class;
+
 
 	public function authorize(): bool {
 
@@ -43,19 +43,15 @@ class SimulationSaveRequest extends BaseModelSaveRequest {
 
 	public function rules(): array {
 
-		// Get supported simulation models dynamically
-		$supportedModels = SimulationRegistry::getSupportedModels();
-		$modelValidation = 'bail|required|string|in:' . implode(',', $supportedModels);
-
 		return $this->translate([
 
-			...$this->getBaseRules(),
+			'job_name' => 'bail|nullable|string|max:255',
 
 			// simulation properties
-			'model' =>		$modelValidation,
-			'params' =>		'bail|nullable',
-			'status' =>		'bail|required|string|in:waiting,running,successful,error',
-			'project_id' =>	'bail|required|uuid|exists:projects,id',
+			'inputs.project_id' => 'bail|required|uuid|exists:projects,id',
+
+			// UMEP Heat Island specific inputs
+			'inputs.resolution' => 'bail|required|numeric|min:1|max:50',
 		]);
 	}
 
@@ -73,7 +69,6 @@ class SimulationSaveRequest extends BaseModelSaveRequest {
 
 		return [
 			...parent::attributes(),
-			//'start' => 	trans('Startdatum'),
 		];
 	}
 

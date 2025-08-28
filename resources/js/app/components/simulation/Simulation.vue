@@ -12,7 +12,7 @@
 			<div class="cols">
 
 				<h3>PaperScope</h3>
-				<simulation-process class="col-50" v-for="process in psSimulations" :process="process" :project="project"/>
+				<simulation-process class="col-50" v-for="process in psSimulations" :key="process.id" :process="process" :project="project"/>
 
 				<h3>Urban Model Platform</h3>
 
@@ -24,7 +24,7 @@
 
 				<!-- MODELS -->
 				<div v-else-if="isLoading" class="col-100" style="height:100px"><loading-spinner/></div>
-				<simulation-process v-else class="col-50" v-for="process in umpSimulations" :process="process" :project="project"/>
+				<simulation-process v-else class="col-50" v-for="process in umpSimulations" :key="process.id" :process="process" :project="project"/>
 
 				<div class="form-row-buttons" v-if="umpBearerToken" style="text-align:right;">
 					<btn label="Logout UMP" class="small secondary" style="margin:0;" @click="logout"/>

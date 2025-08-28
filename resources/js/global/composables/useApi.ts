@@ -201,6 +201,20 @@ export const useApi = () => {
 
 
 	/////////////////////////////////
+	// DELETE REQUEST
+	/////////////////////////////////
+
+	/**
+	 * Fetch an api response with HTTP Delete.
+	 * Returns nothing on success, or an ApiError on failure.
+	 */
+	async function apiDelete(routeName: string, data: any, params?: any): Promise<void | ApiError> {
+		return window.axios.delete(createRoute(routeName, params), {data, ...config})
+			.catch(apiError);
+	}
+
+
+	/////////////////////////////////
 	// PAGINATOR
 	/////////////////////////////////
 
@@ -258,6 +272,7 @@ export const useApi = () => {
 		readCache, writeCache, createCacheKey,
 		apiGetResponse, apiGet, apiGetSlug,
 		apiPostResponse, apiPost,
+		apiDelete,
 	};
 
 

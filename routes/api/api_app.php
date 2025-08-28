@@ -14,6 +14,7 @@
 	use App\Http\Controllers\App\Base\ContentController;
 	use App\Http\Controllers\App\ProjectController;
 	use App\Http\Controllers\App\SimulationController;
+	use App\Helper\SimulationRegistry;
 
 
 
@@ -46,12 +47,14 @@
 	// [add model app routes]
 
 	// ogc api
-	$models = ['umep:heat_island'];
+	$models = SimulationRegistry::getSupportedModels();
 	Route::get('ogc/processes', [SimulationController::class,'getProcesses'])->name('api.ogc.process.list');
 	Route::get('ogc/processes/{model}', [SimulationController::class,'getProcess'])->whereIn('model', $models)->name('api.ogc.process');
 	Route::post('ogc/processes/{model}/execution', [SimulationController::class,'executeProcess'])->whereIn('model', $models)->name('api.ogc.process.execute');
 	Route::get('ogc/jobs', [SimulationController::class,'getJobs'])->name('api.ogc.job.list');
 	Route::get('ogc/jobs/job-{id}', [SimulationController::class,'getJob'])->name('api.ogc.job');
+	Route::get('ogc/jobs/job-{id}/results', [SimulationController::class,'getJobResults'])->name('api.ogc.job.results');
+	Route::delete('ogc/jobs/job-{id}', [SimulationController::class,'deleteJob'])->name('api.ogc.job.delete');
 
 
 

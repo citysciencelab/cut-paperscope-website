@@ -56,6 +56,7 @@ class ProjectSaveRequest extends BaseModelSaveRequest {
 			// project properties
 			'title' =>				'bail|nullable|string|max:150',
 			'description' =>		$this->rule('input-richtext').'|translate',
+			'visualizer_settings' =>			'bail|nullable|array',
 
 			// coordinates
 			'start_longitude' =>	'bail|nullable|numeric',

@@ -12,6 +12,7 @@
 	use App\Http\Controllers\App\AppController;
 	use Illuminate\Http\JsonResponse;
 	use Illuminate\Http\Response;
+	use Illuminate\Http\Request;
 	use Illuminate\Http\RedirectResponse;
 	use Illuminate\Support\Facades\Auth;
 	use Illuminate\Support\Facades\Storage;
@@ -21,11 +22,10 @@
 	use App\Models\App\Simulation;
 	use App\Http\Resources\SimulationResource;
 	use App\Http\Resources\SimulationListResource;
-	use App\Http\Requests\App\SimulationExecuteRequest;
 	use App\Http\Requests\App\SimulationSaveRequest;
 	use App\Http\Requests\App\SimulationWmsRequest;
 	use App\Jobs\ProcessSimulationUpload;
-	use App\Jobs\RunSimulation;
+	use App\Helper\SimulationRegistry;
 
 
 
@@ -113,15 +113,18 @@ class SimulationController extends AppController {
 		$simulation->model = $validated->model;
 		$simulation->params = $this->getInputJson($validated->params);
 		$simulation->project_id = $validated->project_id;
-
 		$simulation->save();
+
+		// set results
+		$controller = SimulationRegistry::getController($simulation->model);
+		$controller->setResults($simulation);
 
 		// add jobs to queue
 		if(!$validated->preview) {
 			ProcessSimulationUpload::dispatch($simulation);
 		}
 
-		$this->startSimulation($simulation);
+		$controller->execute($simulation);
 
 		return $this->getPublic($simulation->id);
 	}
@@ -147,12 +150,15 @@ class SimulationController extends AppController {
 		// update simulation
 		$simulation->params = $validated->params;
 		$simulation->status = $validated->status;
+		$simulation->completed_at = ($validated->status == 'successful' && $simulation->completed_at == null) ? Carbon::now() : null;
 		$simulation->save();
 
 		// trigger a waiting simulation
 		if($oldStatus == 'running' && $simulation->status == 'successful') {
 			$newSimulation = Simulation::whereStatus('waiting')->first();
-			if($newSimulation) { RunSimulation::dispatch($newSimulation); }
+
+			$controller = SimulationRegistry::getController($newSimulation->model);
+			$controller->execute($newSimulation);
 		}
 
 		return $this->responseData($simulation);
@@ -169,9 +175,11 @@ class SimulationController extends AppController {
 
 	public function getProcesses(): JsonResponse {
 
-		$processes = [
-			$this->getProcessData('umep:heat_island'),
-		];
+		$processes = [];
+
+		foreach (SimulationRegistry::getAllControllers() as $controller) {
+			$processes[] = $controller->getDefinition();
+		}
 
 		return response()->json($processes, 200);
 	}
@@ -179,96 +187,58 @@ class SimulationController extends AppController {
 
 	public function getProcess(string $model): JsonResponse {
 
-		$process = $this->getProcessData($model);
+		$controller = SimulationRegistry::getController($model);
+		if (!$controller) {
+			return $this->responseError(404, "Process not found");
+		}
 
-		// inputs
-		$process['inputs'] = [
-			'resolution' => [
-				'title' => 'Resolution',
-				'description' => 'Resolution of the simulation in meters.',
-				'required' => true,
-				'maxOccurrences' => 1,
-				'minOccurrences' => 1,
-				'metadata' => null,
-				'schema' => [ 'type' => 'number', 'minimum' => 1, 'maximum' => 50]
-			],
-			'project_id' => [
-				'title' => 'Project ID',
-				'description' => 'ID of the PaperScope project to run the simulation on.',
-				'required' => true,
-				'maxOccurrences' => 1,
-				'minOccurrences' => 1,
-				'metadata' => null,
-				'schema' => [ 'type' => 'string', 'format' => 'uuid']
-			],
-		];
-
-		// example
-		$process['example'] = [
-			'inputs' => [
-				'resolution' => 10,
-			],
-			'mode' => 'async',
-		];
-
-		// outputs
-		$process['outputs'] = [
-			"heatmap" => [
-				'title' => 'Heatmap',
-				'description' => 'The resulting heatmap of the simulation.',
-				'schema' => [
-					'type' => 'string',
-					'format' => 'uri',
-					'contentMediaType' => 'image/jpg',
-					'example' => config("app.url").'simulation/image/{id}'
-				],
-			]
-		];
+		$process = $controller->getDefinition();
 
 		return response()->json($process, 200);
 	}
 
 
-	private function getProcessData(string $model): array {
+	public function executeProcess(string $model, Request $request): RedirectResponse {
 
-		// get process data
-		if($model == 'umep:heat_island') {
-			return [
-				'version' => '0.1.0',
-				'id' => 'umep:heat_island',
-				'title' => 'UMEP Urban Heat Island',
-				'description' => 'Urban Heat Island effect simulation',
-				'keywords' => ['umep', 'heat island', 'paperscope'],
-				'links' => [],
-				"jobControlOptions" => "async-execute",
-				"outputTransmission" => ["value"],
-				"paperscope" => true,
-			];
+		$controller = SimulationRegistry::getController($model);
+		if (!$controller) {
+			return $this->responseError(400, "Unsupported simulation model");
 		}
 
-		return [];
+		$validated = $this->validateExecuteRequest($request, $controller->getValidationRequestClass());
+		return $this->createAndRunSimulation($model, $validated);
 	}
 
+	private function validateExecuteRequest(Request $request, string $formRequestClass): object {
 
-	public function executeProcess(string $model, SimulationExecuteRequest $request): RedirectResponse {
+		$formRequest = app()->makeWith($formRequestClass, ['request' => $request]);
 
-		$validated = $request->validated();
+		$formRequest->validateResolved();
+
+		return $formRequest->validated();
+	}
+
+	/**
+	 * Create and run simulation with validated data
+	 */
+	private function createAndRunSimulation(string $model, object $validated): RedirectResponse {
+
+		$controller = SimulationRegistry::getController($model);
+		if (!$controller) {
+			return $this->responseError(400, "Unsupported simulation model");
+		}
 
 		// create simulation
 		$simulation = Simulation::create([
 			'name' => $validated->job_name ?? 'Simulation',
 			'public' => true,
 			'model' => $model,
-			'params' => [
-				'resolution' => $validated->inputs['resolution'],
-				'project_id' => $validated->inputs['project_id'],
-			],
+			'params' => $validated->inputs,
 			'project_id' => $validated->inputs['project_id']
-
 		]);
 
 		// run simulation
-		RunSimulation::dispatch($simulation);
+		$controller->execute($simulation);
 
 		// redirect to job
 		return redirect()->route('api.ogc.job', ['id' => $simulation->id]);
@@ -303,6 +273,32 @@ class SimulationController extends AppController {
 		if(!$simulation) { return $this->responseError(404, "Simulation not found"); }
 
 		return response()->json($this->getSimulationData($simulation), 200);
+	}
+
+
+	public function getJobResults(string $id): JsonResponse {
+
+		// get simulation
+		$simulation = Simulation::find($id);
+		if(!$simulation) { return $this->responseError(404, "Simulation not found"); }
+
+		// check if simulation is successful
+		if($simulation->status != 'successful') {
+			return $this->responseError(400, "Simulation is not successful");
+		}
+
+		return response()->json($simulation->results, 200);
+	}
+
+
+	public function deleteJob(string $id): JsonResponse {
+
+		$simulation = Simulation::find($id);
+		if(!$simulation) { return $this->responseError(404, "Simulation not found"); }
+
+		$simulation->delete();
+
+		return response()->json(null, 204);
 	}
 
 
@@ -442,7 +438,7 @@ class SimulationController extends AppController {
         imagedestroy($destImage);
 
         return response($imageData, 200)->header('Content-Type', 'image/png');
-    }
+	}
 
 
 

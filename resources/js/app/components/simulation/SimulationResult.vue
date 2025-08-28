@@ -13,7 +13,9 @@
 
 			<!-- LEFT -->
 			<p class="col-50 small">
-				Erstellt: {{ result.created_at ?? formatDate(result.created) }}<br>
+				Erstellt: {{ result.created_at }}<br>
+				Fläche: {{ areaWidth }}x{{ areaHeight }} m<br>
+				Berechnung: {{ time_taken }}<br>
 				Status: <span :class="'status-'+result.status">{{ result.status }}</span>
 			</p>
 
@@ -34,6 +36,9 @@
 					<br>
 					<a v-if="result.links?.length" :href="result.links[0].href" target="_blank" rel="noreferrer noopener">Download data</a><br>
 				</template>
+
+				<!-- DELETE -->
+				<span class="textlink" @click="deleteResult(result.id)">Löschen</span>
 			</p>
 
 		</div>
@@ -51,8 +56,11 @@
 
 	<script setup>
 
-		import { ref, computed, inject, useTemplateRef } from 'vue';
+		import { computed, inject } from 'vue';
 		import { useRoute } from 'vue-router';
+		import { useDate } from '@global/composables/useDate';
+		import { getLength } from 'ol/sphere';
+		import { LineString } from 'ol/geom';
 
 
 		/////////////////////////////////
@@ -64,32 +72,64 @@
 			result: {type: Object, required: true},
 		});
 
+		const emit = defineEmits(['delete-result']);
+
+		const { secondsToTime } = useDate();
+		const time_taken = secondsToTime(props.result.computation_seconds || 0, true, true);
+
 		const route = useRoute();
-		const isVisualizer = computed(() => route.name == 'visualizer');
 
 
 		/////////////////////////////////
-		// RESULT
+		// RESULT INFOS
 		/////////////////////////////////
 
-		function formatDate(dateString) {
+		const areaWidth = parseInt(getLength(
+			new LineString([
+				[props.project.start_longitude, props.project.start_latitude],
+				[props.project.end_longitude, props.project.start_latitude],
+			]),
+			{ projection: 'EPSG:4326' }
+		));
 
-			const date = new Date(dateString);
-			return date.toLocaleDateString('de-DE', {
-				year: 'numeric',
-				month: '2-digit',
-				day: '2-digit',
-				hour: '2-digit',
-				minute: '2-digit'
-			});
-		}
+		const areaHeight = parseInt(getLength(
+			new LineString([
+				[props.project.start_longitude, props.project.start_latitude],
+				[props.project.start_longitude, props.project.end_latitude],
+			]),
+			{ projection: 'EPSG:4326' }
+		));
 
 
 		/////////////////////////////////
 		// VISUALIZER
 		/////////////////////////////////
 
+		const isVisualizer = computed(() => route.name == 'visualizer');
 		const showSimulation = inject('showSimulation');
+
+
+		/////////////////////////////////
+		// DELETE
+		/////////////////////////////////
+
+		function deleteResult(resultId) {
+			emit('delete-result', resultId);
+		}
+
+
+		/////////////////////////////////
+		// UTILS
+		/////////////////////////////////
+
+		function getTimeTaken(start, end) {
+			if (!start || !end) return 'N/A';
+			const duration = new Date(end) - new Date(start);
+			const minutes = Math.floor((duration / (1000 * 60)) % 60);
+			const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+			const pad = n => n.toString().padStart(2, '0');
+			return `${pad(hours)}:${pad(minutes)} Std`;
+		}
 
 
 	</script>

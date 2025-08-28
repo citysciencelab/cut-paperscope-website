@@ -39,7 +39,8 @@ class Simulation extends BaseModel {
 	// cast properties to correct type
 	protected $casts = [
 		'scene' => 'array',
-		'params' => 'array'
+		'params' => 'array',
+		'results' => 'array',
 	];
 
 

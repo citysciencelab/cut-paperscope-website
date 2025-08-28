@@ -6,11 +6,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	namespace App\Http\Requests\App;
+	namespace App\Http\Requests\App\Simulation;
 
 	// App
 	use App\Http\Requests\Model\BaseModelSaveRequest;
-	use App\Helper\SimulationRegistry;
 
 
 
@@ -21,11 +20,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-class SimulationSaveRequest extends BaseModelSaveRequest {
+class IsodistanceExecuteRequest extends BaseModelSaveRequest {
 
 
 	protected $target = "simulations";
 	protected $targetClass = \App\Models\App\Simulation::class;
+
 
 	public function authorize(): bool {
 
@@ -43,19 +43,20 @@ class SimulationSaveRequest extends BaseModelSaveRequest {
 
 	public function rules(): array {
 
-		// Get supported simulation models dynamically
-		$supportedModels = SimulationRegistry::getSupportedModels();
-		$modelValidation = 'bail|required|string|in:' . implode(',', $supportedModels);
-
 		return $this->translate([
 
-			...$this->getBaseRules(),
+			'job_name' => 'bail|nullable|string|max:255',
 
 			// simulation properties
-			'model' =>		$modelValidation,
-			'params' =>		'bail|nullable',
-			'status' =>		'bail|required|string|in:waiting,running,successful,error',
-			'project_id' =>	'bail|required|uuid|exists:projects,id',
+			'inputs.project_id' => 'bail|required|uuid|exists:projects,id',
+
+			// Isodistance specific inputs
+			'inputs.costing' => 'bail|nullable|string|in:auto,bicycle,bus,bikeshare,truck,hov,taxi,motor_scooter,motorcycle,multimodal,pedestrian',
+			'inputs.range_type' => 'bail|required|string|in:distance,time',
+			'inputs.range' => 'bail|required|array',
+			'inputs.range.*' => 'bail|required|numeric|min:1|max:10000',
+			'inputs.startType' => 'bail|nullable|string|in:all,rectangle,triangle,circle,organic,cross',
+			'inputs.startColor' => 'bail|nullable|string|in:all,black,blue,green,yellow',
 		]);
 	}
 
@@ -73,7 +74,6 @@ class SimulationSaveRequest extends BaseModelSaveRequest {
 
 		return [
 			...parent::attributes(),
-			//'start' => 	trans('Startdatum'),
 		];
 	}
 
