@@ -8,9 +8,8 @@
 
 	namespace App\Http\Requests\App;
 
-	// App
-	use App\Http\Requests\Model\BaseModelSaveRequest;
-	use App\Helper\SimulationRegistry;
+	// Laravel
+	use Illuminate\Foundation\Http\FormRequest;
 
 
 
@@ -21,11 +20,16 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-class SimulationSaveRequest extends BaseModelSaveRequest {
+class ProjectSimulationRequest extends FormRequest {
 
 
-	protected $target = "simulations";
-	protected $targetClass = \App\Models\App\Simulation::class;
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	AUTHORIZE
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
 
 	public function authorize(): bool {
 
@@ -43,20 +47,9 @@ class SimulationSaveRequest extends BaseModelSaveRequest {
 
 	public function rules(): array {
 
-		// Get supported simulation models dynamically
-		$supportedModels = SimulationRegistry::getSupportedModels();
-		$modelValidation = 'bail|required|string|in:' . implode(',', $supportedModels);
-
-		return $this->translate([
-
-			...$this->getBaseRules(),
-
-			// simulation properties
-			'model' =>		$modelValidation,
-			'params' =>		'bail|nullable',
-			'status' =>		'bail|required|string|in:waiting,running,successful,error',
-			'project_id' =>	'bail|required|uuid|exists:projects,id',
-		]);
+		return [
+			'model' => 'required|string|max:255',
+		];
 	}
 
 
@@ -72,8 +65,7 @@ class SimulationSaveRequest extends BaseModelSaveRequest {
 	public function attributes(): array {
 
 		return [
-			...parent::attributes(),
-			//'start' => 	trans('Startdatum'),
+			'model' => 'Model',
 		];
 	}
 
@@ -81,7 +73,9 @@ class SimulationSaveRequest extends BaseModelSaveRequest {
 	public function messages(): array {
 
 		return [
-			...parent::messages(),
+			'model.required' => 'The model parameter is required.',
+			'model.string' => 'The model parameter must be a string.',
+			'model.max' => 'The model parameter may not be greater than 255 characters.',
 		];
 	}
 

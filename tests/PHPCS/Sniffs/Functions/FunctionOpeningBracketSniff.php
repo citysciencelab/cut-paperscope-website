@@ -34,6 +34,12 @@ class FunctionOpeningBracketSniff implements Sniff
 		$tokens = $file->getTokens();
 		$token = $tokens[$stackPtr];
 
+		// Skip abstract functions
+		$prevPtr = $file->findPrevious([T_ABSTRACT], $stackPtr - 1, null, false, null, true);
+		if ($prevPtr !== false && $tokens[$prevPtr]['code'] === T_ABSTRACT && $tokens[$prevPtr]['line'] === $token['line']) {
+			return;
+		}
+
 		// find opening bracket
 		$nextPtr = $file->findNext(T_OPEN_CURLY_BRACKET, $stackPtr, null, false);
 		$nextToken = $tokens[$nextPtr];

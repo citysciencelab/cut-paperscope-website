@@ -32,8 +32,9 @@ class ProjectResource extends BaseModelResource {
 		return [
 
 			// project properties
-			'title' =>			$this->title,
-			'description' =>	$this->translate('description'),
+			'title' =>				$this->title,
+			'description' =>		$this->translate('description'),
+			'visualizer_settings' =>	$this->visualizer_settings,
 
 			// coordinates
 			'start_longitude' =>	$this->start_longitude,

@@ -1,93 +1,84 @@
 <?php
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// 	INCLUDES
+//	INCLUDES
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	namespace App\Http\Requests\App;
+	namespace App\Http\Controllers\App\Simulation;
+
+	// Laravel
+	use Illuminate\Http\JsonResponse;
+	use Illuminate\Http\Response;
+	use Illuminate\Http\RedirectResponse;
 
 	// App
-	use App\Http\Requests\Model\BaseModelSaveRequest;
-	use App\Helper\SimulationRegistry;
+	use App\Models\App\Simulation;
 
 
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// 	CLASS CONSTRUCT
+//	BASE SIMULATION CONTROLLER INTERFACE
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-class SimulationSaveRequest extends BaseModelSaveRequest {
-
-
-	protected $target = "simulations";
-	protected $targetClass = \App\Models\App\Simulation::class;
-
-	public function authorize(): bool {
-
-		return true;
-	}
+abstract class BaseSimulationController {
 
 
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//	VALIDATE
+//	SIMULATION
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	public function rules(): array {
+	abstract public function execute(Simulation $simulation): void;
 
-		// Get supported simulation models dynamically
-		$supportedModels = SimulationRegistry::getSupportedModels();
-		$modelValidation = 'bail|required|string|in:' . implode(',', $supportedModels);
-
-		return $this->translate([
-
-			...$this->getBaseRules(),
-
-			// simulation properties
-			'model' =>		$modelValidation,
-			'params' =>		'bail|nullable',
-			'status' =>		'bail|required|string|in:waiting,running,successful,error',
-			'project_id' =>	'bail|required|uuid|exists:projects,id',
-		]);
-	}
+	abstract public function setResults(Simulation $simulation): void;
 
 
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//	ERROR MESSAGES
+//	OGC API INTERFACE
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	// rename variables for form error messages
-	public function attributes(): array {
+	public function getDefinition(): array {
 
-		return [
-			...parent::attributes(),
-			//'start' => 	trans('Startdatum'),
+		$process = $this->getData();
+		$process['inputs'] = $this->getInputs();
+		$process['outputs'] = $this->getOutputs();
+		$process['example'] = $this->getExample();
+
+		// Add common project_id input to all simulations
+		$process['inputs']['project_id'] = [
+			'title' => 'Project ID',
+			'description' => 'ID of the PaperScope project to run the simulation on.',
+			'required' => true,
+			'maxOccurrences' => 1,
+			'minOccurrences' => 1,
+			'metadata' => null,
+			'schema' => [ 'type' => 'string', 'format' => 'uuid']
 		];
+
+		return $process;
 	}
 
+	abstract public function getData(): array;
 
-	public function messages(): array {
+	abstract public function getInputs(): array;
 
-		return [
-			...parent::messages(),
-		];
-	}
+	abstract public function getOutputs(): array;
 
+	abstract public function getExample(): array;
 
-
-/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+	abstract public function getValidationRequestClass(): string;
 
 
-} // end class
+}

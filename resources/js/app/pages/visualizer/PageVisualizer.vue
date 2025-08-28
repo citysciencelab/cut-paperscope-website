@@ -8,7 +8,7 @@
 	<template>
 
 		<section v-show="cesiumLoaded">
-			<visualizer/>
+			<visualizer-component/>
 		</section>
 		<loading-spinner v-show="!cesiumLoaded"/>
 

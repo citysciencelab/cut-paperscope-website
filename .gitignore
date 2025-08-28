@@ -4,6 +4,7 @@
 /public/hot
 /public/storage
 /public/cesium
+public/json
 /storage/*.key
 /storage/debugbar
 /vendor

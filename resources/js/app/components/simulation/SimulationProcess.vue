@@ -30,12 +30,28 @@
 			<!-- FORM -->
 			<input-text label="Name des Szenarios" id="job_name" v-model="form" required/>
 			<div v-for="(input,key) in inputs">
-				<input-text
-					v-if="input.schema.type=='string'"
+				<input-select
+					v-if="input.schema.type=='string' && input.schema.enum"
 					:label="input.title"
 					:id="key"
 					v-model="form"
 					:required="input.required"
+					:options="input.schema.enum.map(e => ({ [e]: e }))"
+				/>
+				<input-text
+					v-else-if="input.schema.type=='string'"
+					:label="input.title"
+					:id="key"
+					v-model="form"
+					:required="input.required"
+				/>
+				<input-text
+					v-else-if="input.schema.type=='array'"
+					:label="input.title + ' (comma-separated values)'"
+					:id="key"
+					v-model="form"
+					:required="input.required"
+					placeholder="e.g., 100, 500, 600"
 				/>
 				<input-text
 					v-else-if="input.schema.type=='number'"
@@ -69,8 +85,11 @@
 		<popup ref="resultPopup">
 			<loading-spinner v-if="isResultsLoading"/>
 			<p v-else-if="!results.length" class="empty">{{ t('Noch keine Szenarien vorhanden.') }}</p>
-			<simulation-result v-for="result in results" :project="project" :result="result"/>
+			<simulation-result v-for="result in results" :key="result.id" :project="project" :result="result" @delete-result="confirmDelete"/>
 		</popup>
+
+		<!-- DELETE -->
+		<popup-modal ref="deleteModal"/>
 
 	</template>
 
@@ -101,7 +120,7 @@
 		});
 
 		const { t } = useLanguage();
-		const { apiGet, apiGetResponse, apiPost } = useApi();
+		const { apiGet, apiGetResponse, apiPost, apiDelete } = useApi();
 		const { getProcess, executeProcess, getJobs } = useUmp();
 
 
@@ -135,13 +154,40 @@
 			inputs.value = data.inputs;
 
 			// reshape form
-			Object.keys(data.example.inputs).forEach(key => { form.value[key] = data.example.inputs[key]; });
+			Object.keys(data.example.inputs).forEach(key => {
+				const value = data.example.inputs[key];
+				// Convert arrays to comma-separated strings for display in text input
+				if (data.inputs[key] && data.inputs[key].schema.type === 'array' && Array.isArray(value)) {
+					form.value[key] = value.join(', ');
+				} else {
+					form.value[key] = value;
+				}
+			});
 			form.value.project_id = props.project.id;
 		}
 
 
 		function submitForm() {
 
+			// Process array inputs: convert comma-separated strings to arrays
+			const processedForm = { ...form.value };
+			Object.keys(inputs.value).forEach(key => {
+				const input = inputs.value[key];
+				if (input.schema.type != 'array' || typeof processedForm[key] !== 'string') {
+					return;
+				}
+
+				// Parse comma-separated values into array
+				processedForm[key] = processedForm[key]
+					.split(',')
+					.map(item => item.trim())
+					.filter(item => item !== '')
+					.map(item => {
+						// Try to convert to number if it's numeric
+						const num = Number(item);
+						return !isNaN(num) && item !== '' ? num : item;
+					});
+			});
 
 			// save local simulation
 			if(props.process.paperscope) {
@@ -151,8 +197,8 @@
 				}
 
 				const data = {
-					'job_name': form.value.job_name || 'Simulation',
-					'inputs': { ...form.value, ...{'project_id': props.project.id} },
+					'job_name': processedForm.job_name || 'Simulation',
+					'inputs': { ...processedForm, ...{'project_id': props.project.id} },
 				};
 
 				apiPost('api.ogc.process.execute',data, () =>{
@@ -161,7 +207,7 @@
 				return;
 			}
 
-			executeProcess(props.project, form.value);
+			executeProcess(props.project, processedForm);
 		}
 
 
@@ -181,7 +227,7 @@
 
 			if(props.process.paperscope) {
 
-				apiGet('project.simulation',{slug:props.project.slug},data => {
+				apiGet('project.simulation',{slug:props.project.slug, model:props.process.id}, data => {
 					results.value = data;
 					isResultsLoading.value = false;
 				});
@@ -194,6 +240,31 @@
 				isResultsLoading.value = false;
 
 			}).catch(e => console.error(e));
+		}
+
+
+		/////////////////////////////////
+		// DELETE SIMULATION
+		/////////////////////////////////
+
+		const deleteModal = useTemplateRef('deleteModal');
+
+		function confirmDelete(resultId) {
+
+			deleteModal.value.open({
+				title: t("Szenario löschen"),
+				copy: t("szenario.delete.copy"),
+				alert: true,
+				confirmLabel: t("Szenario löschen"),
+				callback: () => deleteSimulation(resultId)
+			});
+		}
+
+		function deleteSimulation(resultId) {
+
+			apiDelete('api.ogc.job.delete', {}, { id: resultId }).then(() => {
+				results.value = results.value.filter(result => result.id !== resultId);
+			});
 		}
 
 

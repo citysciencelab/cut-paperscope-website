@@ -25,6 +25,7 @@
 	use App\Http\Resources\SimulationListResource;
 	use App\Http\Requests\App\ProjectSaveRequest;
 	use App\Http\Requests\App\ProjectSceneSaveRequest;
+	use App\Http\Requests\App\ProjectSimulationRequest;
 	use App\Jobs\Base\ProcessSharingUpload;
 	use App\Jobs\ProcessProjectUpload;
 	use App\Http\Requests\App\Base\ListWithFilterRequest;
@@ -93,6 +94,7 @@ class ProjectController extends AppController {
 		$project->start_latitude	= $validated->start_latitude;
 		$project->end_longitude		= $validated->end_longitude;
 		$project->end_latitude		= $validated->end_latitude;
+		$project->visualizer_settings		= $validated->visualizer_settings;
 
 		// scene
 		$project->ratio				= $this->calculateRatio($project);
@@ -217,10 +219,12 @@ class ProjectController extends AppController {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-	public function getSimulation(string $slug): JsonResponse {
+	public function getSimulation(string $slug, ProjectSimulationRequest $request): JsonResponse {
+
+		$validated = $request->validated();
 
 		$project = Project::whereSlug($slug)->first();
-		$simulations = Simulation::where('project_id', $project->id)->where('public', true)->orderBy('created_at', 'desc')->get();
+		$simulations = Simulation::where('project_id', $project->id)->where('model', $validated['model'])->where('public', true)->orderBy('created_at', 'desc')->get();
 
 		return $this->responseList($simulations, SimulationListResource::class);
 	}

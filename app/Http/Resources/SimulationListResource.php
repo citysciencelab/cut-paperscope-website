@@ -35,6 +35,7 @@ class SimulationListResource extends BaseModelResource {
 			'model' =>	$this->model,
 			'status' =>	$this->status,
 			'created_at' =>	$this->created_at,
+			'computation_seconds' => $this->completed_at ? $this->created_at->diffInSeconds($this->completed_at) : null,
 
 			// backend properties
 			//$this->addBackendProperties(['approved' => $this->approved]),

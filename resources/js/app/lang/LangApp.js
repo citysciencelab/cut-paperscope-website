@@ -9,6 +9,7 @@
 
 		"link.external": "Seite verlassen und Link in neuem Fenster öffnen",
 		"project.delete.copy": "Möchten Sie dieses Projekt wirklich löschen?",
+		"szenario.delete.copy": "Möchten Sie dieses Szenario wirklich löschen?",
 	};
 
 

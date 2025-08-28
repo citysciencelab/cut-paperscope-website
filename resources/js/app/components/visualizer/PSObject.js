@@ -6,6 +6,12 @@
 
 
 	import * as Cesium from 'cesium';
+	import Feature from 'ol/Feature';
+	import Polygon from 'ol/geom/Polygon';
+	import { Fill, Stroke, Style, Icon } from 'ol/style';
+	import ImageLayer from 'ol/layer/Image';
+	import Static from 'ol/source/ImageStatic';
+	import * as olExtent from 'ol/extent';
 
 
 
@@ -74,7 +80,7 @@ class PSObject {
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//	ENTITY
+//	3D VISUALIZER
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
@@ -92,23 +98,6 @@ class PSObject {
 	}
 
 
-	getShape2D() {
-
-		const positions = Cesium.Cartesian3.fromDegreesArray(this.points.flat());
-		const height = this.findHeight(this.points);
-
-		// entity
-		return this.createEntity({
-			polygon: {
-				hierarchy: new Cesium.PolygonHierarchy(positions),
-				extrudedHeight: height + this.groundOffset,
-				height: height - 5,
-				material: this.getFillColor(),
-			}
-		});
-	}
-
-
 	getShape3D() {
 
 		const positions = Cesium.Cartesian3.fromDegreesArray(this.points.flat());
@@ -120,7 +109,7 @@ class PSObject {
 				hierarchy: new Cesium.PolygonHierarchy(positions),
 				extrudedHeight: parseInt(this.mapping.props?.height) + height,
 				height: height - 5,
-				material: this.getFillColor(),
+				material: this.getFillColor(false),
 			},
 		});
 	}
@@ -129,7 +118,7 @@ class PSObject {
 	getModel() {
 
 		var uri = this.mapping.props.file;
-		if(!uri.startsWith('http')) { uri = window.config.base_url + uri; }
+		if(!uri?.startsWith('http')) { uri = window.config.base_url + uri; }
 
 		const height = this.findHeight(this.points);
 
@@ -145,8 +134,6 @@ class PSObject {
 				scale: this.mapping.props.scale,
 			},
 		});
-
-		//setTimeout(() => this.calculateModelBoundingRectangle(entity), 250);
 
 		return entity;
 	}
@@ -204,6 +191,118 @@ class PSObject {
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+//	2D VISUALIZER
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	getShape2D() {
+
+		const positions = Cesium.Cartesian3.fromDegreesArray(this.points.flat());
+		const height = this.findHeight(this.points);
+
+		// entity
+		return this.createEntity({
+			polygon: {
+				hierarchy: new Cesium.PolygonHierarchy(positions),
+				extrudedHeight: height + this.groundOffset,
+				height: height - 5,
+				material: this.getFillColor(false),
+			}
+		});
+	}
+
+
+	get2D() {
+
+		const target = this.mapping.target;
+
+		// For cross shape, return an image layer configuration instead of a feature
+		if (this.shape == 'cross') {
+			return this.getCrossImageLayer();
+		}
+
+		var feature = new Feature();
+
+		// geometry for other shapes
+		const lastPoint = this.points[0];
+		const polygon = new Polygon([[...this.points, lastPoint]]);
+		feature.setGeometry(polygon);
+
+		// styling
+		if(target == 'greenspace') {
+			var fill = new Fill({color: '#DCF297'});
+			var stroke = new Stroke({color: '#B6D397', width: 1});
+		}
+		else if(target == 'street') {
+			var fill = new Fill({color: '#D5D5D5'});
+			var stroke = new Stroke({color: '#605D66', width: 1});
+		}
+		else {
+			var fill = new Fill({color: this.getFillColor(true)});
+			var stroke = new Stroke({color: this.getStrokeColor(true), width: 1});
+		}
+
+		feature.setStyle(new Style({fill, stroke}));
+		return feature;
+	}
+
+
+	getCrossImageLayer() {
+
+		const [cx, cy] = this.points[0];
+		const baseScale = 0.00003;
+		const referenceWidth = 1920;
+		const scale = baseScale * (referenceWidth / window.innerWidth);
+
+		// Adjust longitude buffer for latitude
+		const latRad = cy * Math.PI / 180;
+		const lonBuffer = scale / Math.cos(latRad);
+		const latBuffer = scale;
+
+		// Create an extent that preserves aspect ratio
+		const extent = [
+			cx - lonBuffer, cy - latBuffer,
+			cx + lonBuffer, cy + latBuffer
+		];
+
+		const fillColor = this.getFillColor(true);
+		const originalSvgUrl = window.config.base_url + 'svg/app/cross.svg';
+
+		// Fetch the SVG content and replace the color
+		return fetch(originalSvgUrl)
+			.then(response => response.text())
+			.then(svgContent => {
+				// Replace any fill color with the dynamic color using regex
+				let coloredSvgContent = svgContent.replace(/fill="[^"]*"/g, `fill="${fillColor}"`);
+				coloredSvgContent = coloredSvgContent.replace(/fill:\s*#[0-9a-fA-F]{3,6}/g, `fill: ${fillColor}`);
+
+				// Create blob URL for the modified SVG
+				const blob = new Blob([coloredSvgContent], { type: 'image/svg+xml' });
+				const svgUrl = URL.createObjectURL(blob);
+
+				// Create and return the image layer
+				return new ImageLayer({
+					source: new Static({
+						url: svgUrl,
+						projection: 'EPSG:4326',
+						imageExtent: extent,
+					}),
+					opacity: 1,
+					// Store metadata for identification
+					crossObject: true,
+					objectId: this.uid
+				});
+			})
+			.catch(error => {
+				console.error('Error loading cross SVG:', error);
+			});
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 //	HELPER
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
@@ -230,11 +329,6 @@ class PSObject {
 
 
 	calculatBoundingRectangle() {
-
-		if(this.shape == 'cross') {
-			const point = this.points[0];
-			return Cesium.Rectangle.fromDegrees(point[0] - 0.0003, point[1] - 0.0002, point[0] + 0.0003, point[1] + 0.0002);
-		}
 
 		// find min and max coordinates from points
 		const minX = Math.min(...this.points.map(p => p[0]));
@@ -264,10 +358,17 @@ class PSObject {
 	}
 
 
-	getFillColor() {
+	getFillColor(is2D = true) {
 
 		const hexColor = this.mapping.props?.fill;
-		return Cesium.Color.fromCssColorString(hexColor);
+		return is2D ? hexColor : Cesium.Color.fromCssColorString(hexColor);
+	}
+
+
+	getStrokeColor(is2D = true) {
+
+		const hexColor = this.mapping.props?.stroke || this.mapping.props?.fill;
+		return is2D ? hexColor : Cesium.Color.fromCssColorString(hexColor);
 	}
 
 

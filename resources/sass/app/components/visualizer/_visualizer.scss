@@ -9,7 +9,7 @@
 	// MAP
 	/////////////////////////////////
 
-	#visualizer-map {
+	[id*="visualizer-map"], [id*="two-d-visualizer-map"] {
 
 		@extend %relative;;
 
@@ -31,7 +31,7 @@
 
 		header { display: none; }
 
-		#visualizer-map {
+		[id*="visualizer-map"], [id*="two-d-visualizer-map"] {
 			top: 0;
 			height: $vh100;
 		}

@@ -121,9 +121,12 @@ export const useDate = () => {
 
 	/**
 	 * Convert seconds to a time string in the format "H:i:ss"
+	 * @param seconds - The number of seconds to convert
+	 * @param showHours - Whether to force showing hours (default: false)
+	 * @param showSeconds - Whether to show seconds (default: true)
 	 */
 
-	function secondsToTime(seconds?: number): string {
+	function secondsToTime(seconds?: number, showHours: boolean = false, showSeconds: boolean = true): string {
 
 		if(seconds == null) return '00:00';
 
@@ -132,11 +135,18 @@ export const useDate = () => {
 		var seconds = seconds - (hours * 3600) - (minutes * 60);
 
 		// show hours only if needed
-		if(hours == 0) {
+		if(hours == 0 && !showHours) {
 			return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 		}
 
-		return String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+		var formattedOutput = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+
+		// add seconds only if needed
+		if(showSeconds) {
+			formattedOutput += ':' + String(seconds).padStart(2, '0');
+		}
+
+		return formattedOutput;
 	}
 
 
