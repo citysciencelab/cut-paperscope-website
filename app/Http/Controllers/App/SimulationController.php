@@ -17,6 +17,7 @@
 	use Illuminate\Support\Facades\Auth;
 	use Illuminate\Support\Facades\Storage;
 	use Illuminate\Support\Facades\Cache;
+	use Illuminate\Support\Carbon;
 
 	// App
 	use App\Models\App\Simulation;
@@ -117,7 +118,7 @@ class SimulationController extends AppController {
 
 		// set results
 		$controller = SimulationRegistry::getController($simulation->model);
-		$controller->setResults($simulation);
+		$validated->status == 'successful' ? $controller->setResults($simulation) : null;
 
 		// add jobs to queue
 		if(!$validated->preview) {
@@ -153,9 +154,17 @@ class SimulationController extends AppController {
 		$simulation->completed_at = ($validated->status == 'successful' && $simulation->completed_at == null) ? Carbon::now() : null;
 		$simulation->save();
 
+		// set results
+		$controller = SimulationRegistry::getController($simulation->model);
+		$validated->status == 'successful' ? $controller->setResults($simulation) : null;
+
 		// trigger a waiting simulation
 		if($oldStatus == 'running' && $simulation->status == 'successful') {
 			$newSimulation = Simulation::whereStatus('waiting')->first();
+
+			if (!$newSimulation) {
+				return $this->responseData($simulation);
+			}
 
 			$controller = SimulationRegistry::getController($newSimulation->model);
 			$controller->execute($newSimulation);

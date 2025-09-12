@@ -51,11 +51,10 @@ class UmepHeatIslandController extends BaseSimulationController {
 
 		$simulation->results = [
 			'type' => 'wms',
-			'data' => [
-				'url' => config('app.url') . 'ogc/result',
-				'layer' => $simulation->id
-			]
+			'url' => config('app.url') . 'ogc/result',
+			'layer' => $simulation->id
 		];
+		$simulation->save();
 	}
 
 
