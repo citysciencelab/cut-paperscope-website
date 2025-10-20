@@ -22,71 +22,57 @@
 
 	<script setup>
 
+		// vue
 		import { ref, onMounted, onUnmounted, watch } from 'vue';
-		import { useRoute } from 'vue-router';
+		import { storeToRefs } from 'pinia';
+		import convert from 'color-convert';
+
+		// Cesium
+		import * as Cesium from 'cesium';
+		import "cesium/Build/Cesium/Widgets/widgets.css";
+		
+		// app
 		import { useConfig } from '@global/composables/useConfig';
 		import { useApi } from '@global/composables/useApi';
 		import { useVisualizerStore } from '@app/stores/VisualizerStore';
 		import PSObject from '@app/components/visualizer/PSObject.js';
-		import { bakeHeatmapColorsIntoGeoJSON, rgbaStringToCesiumColor } from '@app/components/visualizer/HeatmapHelper.js';
-
-		import * as Cesium from 'cesium';
-		import "cesium/Build/Cesium/Widgets/widgets.css";
 
 
 		/////////////////////////////////
 		// INIT
 		/////////////////////////////////
-
-		const route = useRoute();
+		
 		const { apiGetResponse } = useApi();
 		const { baseUrl, tilesetUrl } = useConfig();
-		const visualizerStore = useVisualizerStore();
 
-		defineExpose({
-			focus,
-			showSimulation
+
+		/////////////////////////////////
+		// PROJECT
+		/////////////////////////////////
+
+		const visualizerStore = useVisualizerStore();
+		const { project, simulation, resetFocus } = storeToRefs(visualizerStore);
+
+		function initProject() {
+
+			if(!map || !project.value || !terrainLoaded.value || areaInitialized.value) { return; }
+
+			initArea();
+			focus();
+			updateScene();
+			updateSimulation();
+		}
+
+
+		watch(project, () => {
+
+			if(!project.value) { return; }
+			areaInitialized.value ? updateScene() : initProject()
 		});
 
 
 		/////////////////////////////////
-		// PROJECT MANAGEMENT
-		/////////////////////////////////
-
-		const mapping = ref(null);
-		let projectWatcher = null;
-
-		function startProjectWatch() {
-
-			if (projectWatcher) return; // Prevent multiple watchers
-
-			projectWatcher = watch(visualizerStore.project, updateProject);
-
-			// Check if project already has a value when starting the watch
-			if (!visualizerStore.project) return;
-
-			updateProject(visualizerStore.project);
-		}
-
-		function updateProject(newProject) {
-
-			if (!newProject) return;
-
-			mapping.value = newProject.mapping;
-			initArea();
-			updateScene();
-			focus();
-
-			// Load existing simulation if available
-			if (visualizerStore.hasSimulation) return;
-
-			const sim = visualizerStore.currentSimulation;
-			showSimulation(sim.jobId, sim.isUmp);
-		}
-
-
-		/////////////////////////////////
-		// MAP
+		// 3D MAP
 		/////////////////////////////////
 
 		var map = null;
@@ -123,21 +109,81 @@
 			map.scene.light.intensity = 3.2;
 			map.scene.light.color = Cesium.Color.fromCssColorString('#F9E6C7');
 
+			initProject();
 			//initTesting();
-
-			startProjectWatch();
 		}
 
 
-		function destroy() {
+		function destroyMap() {
 
-			projectWatcher = null;
 			map?.destroy();
-			map = null;
 		}
+
 
 		onMounted(initMap);
-		onUnmounted(destroy);
+		onUnmounted(destroyMap);
+
+
+		/////////////////////////////////
+		// RENDER
+		/////////////////////////////////
+
+		const entities = ref([]);
+
+		async function updateScene() {
+
+			if(!terrainLoaded.value || !project.value.mapping) { return; }
+
+			// remove all old entities
+			map.entities.removeAll();
+			entities.value = [];
+
+			// iterate all items in scene
+			for(const f of project.value.scene?.features ?? []) {
+
+				var psObject = new PSObject(f, map, project.value.mapping);
+				if(!psObject.mapping) { continue; }
+				
+				// add to 3d map
+				const entity = psObject.create3dFeature();
+				entities.value.push(entity);
+			}
+
+			// update boundings
+			hamburgTilesets.forEach(set => set._selectedTiles.forEach(entityTileIntersection) );
+		}
+
+
+		function entityTileIntersection(tile) {
+
+			// skip if tile not intersecting with area or very large
+			const rectangle = tile.boundingVolume.rectangle;
+			if(rectangle.width * rectangle.height * 1000 > 0.0005) { return; }
+			if(!Cesium.Rectangle.simpleIntersection(rectangle, areaRectangle)) { return; }
+
+			// iterate all features
+			for(let i=0; i<tile.content.featuresLength; i++) {
+
+				// get boundings of feature
+				const feature = tile.content.getFeature(i);
+				const boundings = feature.getProperty("boundings");
+				if(!boundings) { feature.color = Cesium.Color.RED; continue; }
+				const min = boundings.min;
+				const max = boundings.max;
+
+				// check for intersection
+				const rectangle = Cesium.Rectangle.fromDegrees(min[1], min[0], max[1], max[0]);
+				for(let j=0; j < entities.value.length; j++) {
+
+					const entityRectangle = entities.value[j].boundingRectangle;
+					if(!entityRectangle) { continue; }
+
+					const intersect = Cesium.Rectangle.intersection(rectangle, entityRectangle);
+					if(intersect) { feature.show = false; break; }
+					feature.show = true;
+				}
+			}
+		}
 
 
 		/////////////////////////////////
@@ -159,7 +205,7 @@
 
 				if(map.scene.globe.tilesLoaded && !terrainLoaded.value) {
 					terrainLoaded.value = true;
-					updateScene();
+					initProject();
 				}
 			});
 
@@ -207,91 +253,19 @@
 
 
 		/////////////////////////////////
-		// RENDER
-		/////////////////////////////////
-
-		const entities = ref([]);
-
-		async function updateScene() {
-
-			if(!visualizerStore.project || !map || !terrainLoaded.value || !mapping.value) { return; }
-
-			// remove all old entities
-			map.entities.removeAll();
-			entities.value = [];
-
-			// iterate all items in scene
-			for(const f of visualizerStore.project.scene?.features ?? []) {
-
-				var psObject = new PSObject(f, map, mapping.value);
-				if(!psObject.mapping) { continue; }
-
-				// add to 3d map
-				const entity = psObject.addEntity();
-				entities.value.push(entity);
-			}
-
-			// update boundings
-			hamburgTilesets.forEach(set => set._selectedTiles.forEach(entityTileIntersection) );
-		}
-
-
-		function entityTileIntersection(tile) {
-
-			// skip if tile not intersecting with area or very large
-			const rectangle = tile.boundingVolume.rectangle;
-			if(rectangle.width * rectangle.height * 1000 > 0.0005) { return; }
-			if(!Cesium.Rectangle.simpleIntersection(rectangle, areaRectangle)) { return; }
-
-			// iterate all features
-			for(let i=0; i<tile.content.featuresLength; i++) {
-
-				// get boundings of feature
-				const feature = tile.content.getFeature(i);
-				const boundings = feature.getProperty("boundings");
-				if(!boundings) { feature.color = Cesium.Color.RED; continue; }
-				const min = boundings.min;
-				const max = boundings.max;
-
-				// check for intersection
-				const rectangle = Cesium.Rectangle.fromDegrees(min[1], min[0], max[1], max[0]);
-				for(let j=0; j < entities.value.length; j++) {
-
-					const entityRectangle = entities.value[j].boundingRectangle;
-					if(!entityRectangle) { continue; }
-
-					const intersect = Cesium.Rectangle.intersection(rectangle, entityRectangle);
-					if(intersect) { feature.show = false; break; }
-					feature.show = true;
-				}
-			}
-		}
-
-
-		/////////////////////////////////
 		// FOCUS
 		/////////////////////////////////
 
 		function focus() {
-			visualizerStore.project ? focusProject() : focusDefault();
+			
+			project.value ? focusProject() : focusDefault();
 		}
 
-		function focusDefault() {
-
-			if (!map) return;
-
-			map.scene.camera.lookAt(
-				Cesium.Cartesian3.fromDegrees(10.005, 53.555),
-				new Cesium.HeadingPitchRange(-0.3, Cesium.Math.toRadians(-28), 1500)
-			);
-		}
 
 		function focusProject() {
 
-			if (!map || !visualizerStore.project) return;
-
-			const start = [visualizerStore.project.start_longitude, visualizerStore.project.start_latitude];
-			const end = [visualizerStore.project.end_longitude, visualizerStore.project.end_latitude];
+			const start = [project.value.start_longitude, project.value.start_latitude];
+			const end = [project.value.end_longitude, project.value.end_latitude];
 
 			// camera position
 			const boundingSphere = Cesium.BoundingSphere.fromPoints([
@@ -307,6 +281,18 @@
 		}
 
 
+		function focusDefault() {
+
+			map.scene.camera.lookAt(
+				Cesium.Cartesian3.fromDegrees(10.005, 53.555),
+				new Cesium.HeadingPitchRange(-0.3, Cesium.Math.toRadians(-28), 1500)
+			);
+		}
+
+		
+		watch(resetFocus, focus);
+
+
 		/////////////////////////////////
 		// AREA
 		/////////////////////////////////
@@ -316,12 +302,10 @@
 
 		function initArea() {
 
-			if (!visualizerStore.project || !map || areaInitialized.value) return;
-
-			var start = [visualizerStore.project.start_latitude, visualizerStore.project.start_longitude];
-			var end = [visualizerStore.project.end_latitude, visualizerStore.project.end_longitude];
+			// boundings
+			var start = [project.value.start_latitude, project.value.start_longitude];
+			var end = [project.value.end_latitude, project.value.end_longitude];
 			areaRectangle = Cesium.Rectangle.fromDegrees(start[1], start[0], end[1], end[0]);
-			//showRectangle(areaRectangle, Cesium.Color.RED.withAlpha(0.3));
 
 			const positions = [
 				Cesium.Cartesian3.fromDegrees(start[1], start[0]),
@@ -343,134 +327,98 @@
 					})
 				})
 			}));
+
 			areaInitialized.value = true;
 		}
 
 
 		/////////////////////////////////
-		// SIMULATION RESULTS
+		// SIMULATION
 		/////////////////////////////////
 
-		const UMP_RESULTS = { type: "wms", url: "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms" };
+		var simulationSource = null;
+		var simulationLayer = null;
+		
+		function updateSimulation() {
 
-		var simulationResult = ref(null);
-
-		async function showSimulation(jobId, isUmp = false) {
-
-			if (!map) return;
-
-			// Save simulation state to store
-			visualizerStore.setSimulation(jobId, isUmp);
-
-			// remove old layer
-			if(simulationResult.value) {
-				map.scene.imageryLayers.remove(simulationResult.value, true);
+			if(!simulation.value) { 
+				if(simulationSource) { map.dataSources.remove(simulationSource, true); simulationSource = null; }
+				if(simulationLayer) { map.scene.imageryLayers.remove(simulationLayer, true); simulationLayer = null; }
+				return; 
 			}
 
-			// clear simulation
-			if(!jobId) {
-				simulationResult.value = null;
-				return;
+			if(!simulation.value.isUmp) {
+				
+				apiGetResponse('api.ogc.job.results', {id: simulation.value.id}, onSimulationLoaded);
 			}
+			else {
 
-			var results = isUmp ? UMP_RESULTS : null;
+				const data = { type: "wms", url: "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms" };
+				onSimulationLoaded({ data });
+			}
+		}
 
-			if (!isUmp) {
-				await apiGetResponse(`api.ogc.job.results`, {id: jobId}, response => {
-					if (response.status !== 200) {
-						console.error("No results found for job:", jobId);
-						return;
-					}
+		async function onSimulationLoaded(response) {
+			
+			const data = response?.data;
+			if(!data) { return; }
 
-					results = response.data;
+			// reset layer
+			if(simulationSource) { map.dataSources.remove(simulationSource, true); }	
+			if(simulationLayer) { map.scene.imageryLayers.remove(simulationLayer, true); }
+
+			if(data.type == 'geojson-features' && data.geojson) {
+				
+				simulationSource = await Cesium.GeoJsonDataSource.load(data.geojson,{
+					clampToGround: true,
+					markerSize: 10
 				});
+
+				applyColorRamp(simulationSource.entities.values, data.geojson);
+
+				map.dataSources.add(simulationSource);
 			}
+			else if(data.type == 'wms' && data.url) {
 
-			switch (results?.type) {
-				case "wms":
-					await showWMSSimulation(results.url, jobId, isUmp);
-					break;
-				case "geojson-features":
-					await showGeoJSONFeatures(results.geojson);
-					break;
-				default:
-					console.error("Unsupported result type:", results?.type);
-					return;
-			}
-		}
-
-		async function showWMSSimulation(url, jobId, isUmp = false) {
-
-			if (!url || !jobId) return;
-
-			const provider = new Cesium.WebMapServiceImageryProvider({
-				url: url,
-				layers: isUmp ? "CUT:" + jobId : jobId,
-				parameters: {
-					format: 'image/png',
-					SINGLETILE: false,
-					transparent: true,
-					STYLES: '',
-					width: 256,
-					height: 256,
-				}
-			});
-
-			simulationResult.value = new Cesium.ImageryLayer(provider);
-			map.scene.imageryLayers.add(simulationResult.value);
-		}
-
-		async function showGeoJSONFeatures(features) {
-
-			if (!features) return;
-
-			// Clear existing layer
-			map.dataSources.getByName("geojson-features").forEach(ds => {
-				map.dataSources.remove(ds, true);
-			});
-
-			// First, bake heatmap colors into the GeoJSON features
-			const processedFeatures = bakeHeatmapColorsIntoGeoJSON(features);
-
-			// Add new features with heatmap coloring
-			const geojsonSource = await Cesium.GeoJsonDataSource.load(processedFeatures, {
-				clampToGround: true,
-				markerSize: 10
-			});
-			geojsonSource.name = "geojson-features";
-
-			// Apply heatmap colors to the loaded entities
-			const entities = geojsonSource.entities.values;
-			for (let i = 0; i < entities.length; i++) {
-				const entity = entities[i];
-				const fillColorString = entity.properties._heatmap_fill_color?.getValue();
-				const strokeColorString = entity.properties._heatmap_stroke_color?.getValue();
-
-				if (fillColorString && strokeColorString) {
-					const fillColor = rgbaStringToCesiumColor(fillColorString);
-					const strokeColor = rgbaStringToCesiumColor(strokeColorString);
-
-					// Apply colors based on geometry type
-					if (entity.polygon) {
-						entity.polygon.material = fillColor;
-						entity.polygon.outline = true;
-						entity.polygon.outlineColor = strokeColor;
-					} else if (entity.polyline) {
-						entity.polyline.material = strokeColor;
-						entity.polyline.width = 3;
-					} else if (entity.point) {
-						entity.point.color = fillColor;
-						entity.point.outlineColor = strokeColor;
-						entity.point.outlineWidth = 2;
-						entity.point.pixelSize = 8;
-					} else if (entity.billboard) {
-						entity.billboard.color = fillColor;
+				const id = (simulation.value.isUmp ? 'CUT:':'') + simulation.value.id;
+			
+				const provider = new Cesium.WebMapServiceImageryProvider({
+					url: data.url,
+					layers: id,
+					parameters: {
+						format: 'image/png',
+						SINGLETILE: false,
+						transparent: true,
+						STYLES: '',
+						width: 256,
+						height: 256,
 					}
-				}
-			}
+				});
 
-			map.dataSources.add(geojsonSource);
+				simulationLayer = new Cesium.ImageryLayer(provider);
+				map.scene.imageryLayers.add(simulationLayer);
+			}
 		}
+
+
+		function applyColorRamp(entities, geojson) {
+
+			entities.forEach((f,i) => {
+				
+				const offset = entities.length > 1 && geojson.features.length > 1 ? i/(entities.length-1) : 0;
+				
+				// calculate color from hue (hsl to rgb)
+				const h = 100 * (1 - offset);
+				const [r, g, b] = convert.hsl.rgb([h, 100, 50]);
+				const a = 0.4 - (offset * 0.3);
+				const color = `rgba(${r}, ${g}, ${b}, ${a})`;
+
+				f.polygon.material = Cesium.Color.fromCssColorString(color);
+			});
+		}
+
+
+		watch(simulation, updateSimulation);
 
 
 		/////////////////////////////////

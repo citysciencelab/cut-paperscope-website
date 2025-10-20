@@ -22,356 +22,284 @@
 
 	<script setup>
 
-	import { ref, onMounted, onUnmounted, watch } from 'vue';
-	import { useConfig } from '@global/composables/useConfig';
-	import { useApi } from '@global/composables/useApi';
-	import { useVisualizerStore } from '@app/stores/VisualizerStore';
-	import PSObject from '@app/components/visualizer/PSObject.js';
-	import { bakeHeatmapColorsIntoGeoJSON } from '@app/components/visualizer/HeatmapHelper.js';
+		// vue
+		import { onMounted, onUnmounted, watch } from 'vue';
+		import { storeToRefs } from 'pinia';
+		import convert from 'color-convert';
 
-	import { Map, View } from 'ol/index.js';
-	import TileLayer from 'ol/layer/Tile.js';
-	import ImageLayer from 'ol/layer/Image.js';
-	import OSM from 'ol/source/OSM.js';
-	import { useGeographic } from 'ol/proj.js';
-	import { GeoJSON } from 'ol/format.js';
-	import Feature from 'ol/Feature.js';
-	import { Polygon } from 'ol/geom.js';
-	import { Style, Stroke, Fill } from 'ol/style.js';
-	import VectorSource from 'ol/source/Vector.js';
-	import VectorLayer from 'ol/layer/Vector.js';
-	import TileWMS from 'ol/source/TileWMS.js';
-	import '@node_modules/ol/ol.css';
+		// OpenLayers
+		import OSM from 'ol/source/OSM.js';
+		import { Map, View } from 'ol/index.js';
+		import { useGeographic } from 'ol/proj.js';
+		import VectorSource from 'ol/source/Vector.js';
+		import VectorLayer from 'ol/layer/Vector.js';
+		import TileWMS from 'ol/source/TileWMS.js';
+		import TileLayer from 'ol/layer/Tile.js';
+		import { GeoJSON } from 'ol/format.js';
+		import Feature from 'ol/Feature.js';
+		import { Polygon } from 'ol/geom.js';
+		import { Style, Stroke, Fill } from 'ol/style.js';
+		import '@node_modules/ol/ol.css';
 
+		// App
+		import { useApi } from '@global/composables/useApi';
+		import { useVisualizerStore } from '@app/stores/VisualizerStore';
+		import PSObject from '@app/components/visualizer/PSObject.js';
+		
 
-	/////////////////////////////////
-	// INIT
-	/////////////////////////////////
+		/////////////////////////////////
+		// INIT
+		/////////////////////////////////
 
-	const { apiGetResponse } = useApi();
-	const { baseUrl } = useConfig();
-	const visualizerStore = useVisualizerStore();
-
-	defineExpose({
-		focus,
-		showSimulation
-	});
+		const { apiGetResponse } = useApi();
 
 
-	/////////////////////////////////
-	// PROJECT MANAGEMENT
-	/////////////////////////////////
+		/////////////////////////////////
+		// PROJECT
+		/////////////////////////////////
+
+		const visualizerStore = useVisualizerStore();
+		const { project, simulation, resetFocus } = storeToRefs(visualizerStore);
 
 
-	let projectWatcher = null;
-	let mapInitialized = ref(false);
+		function initProject() {
 
-	function startProjectWatch() {
+			if(!map || !project.value || areaFeature) { return; }
 
-		if (projectWatcher) return; // Prevent multiple watchers
-
-		projectWatcher = watch(visualizerStore.project, (newProject) => {
-			if (mapInitialized.value) {
-				updateProject(newProject);
-			}
-		}, { immediate: true });
-	}
-
-	function updateProject(newProject) {
-
-		if (!newProject || !mapInitialized.value || !map) return;
-
-		initArea();
-		updateScene(newProject.mapping);
-		focus();
-
-		// Load existing simulation if available
-		if (visualizerStore.hasSimulation) return;
-
-		const sim = visualizerStore.currentSimulation;
-
-		if (!sim || !sim.jobId) return;
-
-		showSimulation(sim.jobId, sim.isUmp);
-	}
+			initArea();
+			focus();
+			updateScene();
+			updateSimulation();
+		}
 
 
-	/////////////////////////////////
-	// MAP
-	/////////////////////////////////
+		watch(project, () => {
 
-	var map = null;
-	var vectorLayer = null;
-	var vectorSource = null;
-
-	async function initMap() {
-
-		useGeographic();
-
-		// container for content
-		vectorSource = new VectorSource();
-		vectorLayer = new VectorLayer({ source: vectorSource });
-		map = new Map({
-			target: 'visualizer-map',
-			layers: [
-				new TileLayer({ source: new OSM() }),
-				vectorLayer
-			],
-			controls: [],
-			view: new View({
-				zoom: 14,
-				center: [9.99, 53.565],
-			})
+			if(!project.value) { return; }
+			areaFeature ? updateScene() : initProject()
 		});
 
-		// Wait for map to finish first render before allowing drawing
-		map.once('rendercomplete', () => {
-			mapInitialized.value = true;
 
-			// If project is already set, update now
-			if (visualizerStore.project) {
-				updateProject(visualizerStore.project);
-			}
-		});
+		/////////////////////////////////
+		// 2D MAP
+		/////////////////////////////////
 
-		startProjectWatch();
-	}
-
-	function destroy() {
-
-		projectWatcher = null;
-
-		if (!map) return;
-
-		// Clean up cross image layers
-		const layersToRemove = [];
-		map.getLayers().forEach(layer => {
-			if (layer instanceof ImageLayer && layer.get('crossObject')) {
-				layersToRemove.push(layer);
-			}
-		});
-		layersToRemove.forEach(layer => map.removeLayer(layer));
-
-		map?.dispose();
-		map = null;
-	}
-
-	onMounted(initMap);
-	onUnmounted(destroy);
+		var map = null;
+		var vectorLayer = null;
+		var vectorSource = null;
 
 
-	/////////////////////////////////
-	// RENDER
-	/////////////////////////////////
+		function initMap() {
 
-	async function updateScene(mapping) {
+			// init coordinate reference system
+			useGeographic();
 
-		if(!visualizerStore.project || !map) { return; }
+			// init layer
+			const tileLayer = new TileLayer({ source: new OSM() });
+			vectorSource = new VectorSource();
+			vectorLayer = new VectorLayer({ source: vectorSource });
+			
+			map = new Map({
+				target: 'visualizer-map',
+				layers: [tileLayer, vectorLayer],
+				controls: [],
+				view: new View({
+					zoom: 14,
+					center: [9.99, 53.565],
+				})
+			});
+			
+			initProject();
+		}
 
-		// Clear existing features except area
-		const features = vectorSource.getFeatures();
-		features.forEach(feature => {
-			if (!feature.get('isArea')) {
-				vectorSource.removeFeature(feature);
-			}
-		});
 
-		// Clear existing cross image layers
-		const layersToRemove = [];
-		map.getLayers().forEach(layer => {
-			if (layer instanceof ImageLayer && layer.get('crossObject')) {
-				layersToRemove.push(layer);
-			}
-		});
-		layersToRemove.forEach(layer => map.removeLayer(layer));
+		function destroyMap() {
 
-		// iterate all items in scene
-		for(const f of visualizerStore.project.scene?.features ?? []) {
-			var psObject = new PSObject(f, map, mapping);
-			if(!psObject.mapping) { continue; }
+			map?.dispose();
+		}
 
-			const result = await psObject.get2D();
 
-			// Handle image layers (for cross shapes)
-			if (result instanceof ImageLayer) {
-				map.addLayer(result);
-			}
-			// Handle regular features
-			else {
-				vectorSource.addFeature(result);
+		onMounted(initMap);
+		onUnmounted(destroyMap);
+
+
+		/////////////////////////////////
+		// RENDER
+		/////////////////////////////////
+
+		async function updateScene() {
+
+			if(!project.value?.mapping) { return; }
+
+			// reset source
+			vectorSource.getFeatures().forEach(f => f.ol_uid != areaFeature.ol_uid ? vectorSource.removeFeature(f) : null);
+
+			// iterate all items in scene
+			for(const f of project.value.scene?.features ?? []) {
+				
+				// paperscope object
+				var psObject = new PSObject(f, map, project.value.mapping);
+				if(!psObject.mapping) { continue; }
+
+				// add feature
+				const feature = await psObject.create2dFeature();
+				vectorSource.addFeature(feature);
 			}
 		}
-	}
 
 
-	/////////////////////////////////
-	// FOCUS
-	/////////////////////////////////
+		/////////////////////////////////
+		// FOCUS
+		/////////////////////////////////
 
-	function focus() {
-		visualizerStore.project ? focusProject() : focusDefault();
-	}
-
-	function focusDefault() {
-
-		if (!map) return;
-
-		map.getView().setCenter([10.005, 53.555]);
-		map.getView().setZoom(14);
-	}
-
-	function focusProject() {
-
-		if (!map || !visualizerStore.project) return;
-
-		const start = [visualizerStore.project.start_longitude, visualizerStore.project.start_latitude];
-		const end = [visualizerStore.project.end_longitude, visualizerStore.project.end_latitude];
-
-		// Calculate center point
-		const centerLon = (start[0] + end[0]) / 2;
-		const centerLat = (start[1] + end[1]) / 2;
-
-		// Set view to center of project area
-		map.getView().setCenter([centerLon, centerLat]);
-		map.getView().setZoom(17);
-	}
+		function focus() {
+			
+			project.value ? focusProject() : focusDefault();
+		}
 
 
-	/////////////////////////////////
-	// AREA
-	/////////////////////////////////
+		function focusProject() {
 
-	const areaInitialized = ref(false);
-
-	function initArea() {
-
-		if (!visualizerStore.project || areaInitialized.value) return;
-
-		var start = [visualizerStore.project.start_latitude, visualizerStore.project.start_longitude];
-		var end = [visualizerStore.project.end_latitude, visualizerStore.project.end_longitude];
-
-		const area = new Polygon([[
-			[start[1], start[0]],
-			[end[1], start[0]],
-			[end[1], end[0]],
-			[start[1], end[0]],
-			[start[1], start[0]]
-		]]);
-		const feature = new Feature({ geometry: area });
-		feature.set('isArea', true); // Mark as area feature
-		feature.setStyle(new Style({
-			fill: new Fill({ color: 'rgba(255, 255, 255, 0.1)' }),
-			stroke: new Stroke({ color: 'rgba(0, 255, 255, 1.0)', width: 5 })
-		}));
-		vectorSource.addFeature(feature);
-		areaInitialized.value = true;
-	}
+			const extent = areaFeature.getGeometry().getExtent();
+			map.getView().fit(extent, {padding: [20, 50, 40, 50]});
+		}
 
 
-	/////////////////////////////////
-	// SIMULATION RESULTS
-	/////////////////////////////////
+		function focusDefault() {
 
-	const UMP_RESULTS = { type: "wms", url: "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms" };
+			map.getView().setCenter([10.005, 53.555]);
+			map.getView().setZoom(14);
+		}
 
-	async function showSimulation(jobId, isUmp = false) {
 
-		// Save simulation state to store
-		visualizerStore.setSimulation(jobId, isUmp);
+		watch(resetFocus, focus);
 
-		var results = isUmp ? UMP_RESULTS : null;
 
-		if (!isUmp) {
-			await apiGetResponse(`api.ogc.job.results`, {id: jobId}, response => {
-				if (response.status !== 200) {
-					console.error("No results found for job:", jobId);
-					return;
-				}
+		/////////////////////////////////
+		// AREA
+		/////////////////////////////////
 
-				results = response.data;
+		var areaFeature = null;
+
+		function initArea() {
+
+			// boundings
+			var start = [project.value.start_latitude, project.value.start_longitude];
+			var end = [project.value.end_latitude, project.value.end_longitude];
+
+			// init shape
+			const geometry = new Polygon([[
+				[start[1], start[0]],
+				[end[1], start[0]],
+				[end[1], end[0]],
+				[start[1], end[0]],
+				[start[1], start[0]]
+			]]);
+
+			// OpenLayers feature
+			areaFeature = new Feature({ geometry });
+			areaFeature.setStyle(new Style({
+				fill: new Fill({ color: 'rgba(255, 255, 255, 0.1)' }),
+				stroke: new Stroke({ color: 'rgba(0, 255, 255, 1.0)', width: 5 })
+			}));
+
+			vectorSource.addFeature(areaFeature);
+		}
+
+
+		/////////////////////////////////
+		// SIMULATION
+		/////////////////////////////////
+		
+		var simulationSource = null;
+		var simulationLayer = null;
+
+		function updateSimulation() {
+
+			if(!simulation.value) { 
+				if(simulationSource) { simulationSource?.clear(); simulationSource = null; }
+				if(simulationLayer) { map.removeLayer(simulationLayer); simulationLayer = null; }
+				return; 
+			}
+
+			if(!simulation.value.isUmp) {
+				
+				apiGetResponse('api.ogc.job.results', {id: simulation.value.id}, onSimulationLoaded);
+			}
+			else {
+				
+				const data = { type: "wms", url: "https://scenarioexplorer.comodeling.city/geoserver/CUT/wms" };
+				onSimulationLoaded({ data });
+			}
+		}
+
+
+		function onSimulationLoaded(response) {
+			
+			const data = response?.data;
+			if(!data) { return; }
+
+			// reset layer
+			if(simulationSource) { simulationSource?.clear(); }
+			if(simulationLayer) { map.removeLayer(simulationLayer); }
+		
+			if(data.type == 'geojson-features' && data.geojson) {
+				
+				// create features
+				const features = new GeoJSON().readFeatures(data.geojson);
+				applyColorRamp(features);
+				
+				// create layer
+				simulationSource = new VectorSource(); 
+				simulationSource.addFeatures(features); 
+				simulationLayer = new VectorLayer({ source: simulationSource });
+			}
+			else if(data.type == 'wms' && data.url) {
+
+				const id = (simulation.value.isUmp ? 'CUT:':'') + simulation.value.id;
+				
+				simulationSource = new TileWMS({
+					url: data.url,
+					params: { 'LAYERS': id, 'VERSION': '1.1.1', 'WIDTH': 256, 'HEIGHT': 256, },
+					ratio: 1,
+					serverType: 'geoserver',
+					projection: 'EPSG:4326',
+				});
+				simulationLayer = new TileLayer({ source: simulationSource });
+			}
+			else {
+				console.error('Unsupported simulation result type:', data);
+				return;
+			}
+
+			// add layer to map	
+			const layers = map.getLayers();
+			layers.insertAt(1, simulationLayer);
+		}
+
+
+		function applyColorRamp(features) {
+
+			features.forEach((f,i) => {
+				
+				const offset = features.length > 1 ? i/(features.length-1) : 0;
+				
+				// calculate color from hue (hsl to rgb)
+				const h = 90 * (1 - offset);
+				const [r, g, b] = convert.hsl.rgb([h, 100, 50]);
+				const a = 0.4 - (offset * 0.3);
+				const color = `rgba(${r}, ${g}, ${b}, ${a})`;
+
+				f.setStyle(new Style({
+					fill: new Fill({ color }),
+					stroke: new Stroke({ color: `rgb(${parseInt(r*0.7)}, ${parseInt(g*0.7)}, ${parseInt(b*0.7)})`, width: 1 }),
+					zIndex: Math.round((1 - offset) * 100)
+				}));
 			});
 		}
 
-		switch (results?.type) {
-			case "wms":
-				await showWMSSimulation(results.url, jobId, isUmp);
-				break;
-			case "geojson-features":
-				await showGeoJSONFeatures(results.geojson);
-				break;
-			default:
-				console.error("Unsupported result type:", results?.type);
-				return;
-		}
-	}
 
-	async function showWMSSimulation(url, jobID, isUmp = false) {
+		watch(simulation, updateSimulation);
 
-		if (!url || !jobID) return;
 
-		// remove old layer
-		map.getLayers().forEach(layer => {
-			if (layer instanceof TileLayer && layer.getSource() instanceof TileWMS) {
-				map.removeLayer(layer);
-			}
-		});
-
-		var layer = new TileLayer({
-			source: new TileWMS({
-				url: url,
-				params: {
-					'LAYERS': isUmp ? "CUT:"+jobID : jobID,
-					'VERSION': '1.1.1',
-					'WIDTH': 256,
-					'HEIGHT': 256,
-				},
-				ratio: 1,
-				serverType: 'geoserver',
-				projection: 'EPSG:4326',
-			}),
-			crossObject: true // Mark as cross object
-		});
-
-		map.getLayers().insertAt(1, layer);
-	}
-
-	async function showGeoJSONFeatures(features) {
-
-		if (!features) return;
-
-		// Clear existing layer
-		map.getLayers().forEach(layer => {
-			if (
-				layer instanceof VectorLayer &&
-				layer.getSource() instanceof VectorSource &&
-				layer.get('className') === 'geojson-features'
-			) {
-				map.removeLayer(layer);
-			}
-		});
-
-		const processedFeatures = bakeHeatmapColorsIntoGeoJSON(features);
-		const geoJsonFeatures = new GeoJSON().readFeatures(processedFeatures);
-
-		// Add new features with baked-in styling
-		const vectorLayer = new VectorLayer({
-			source: new VectorSource({
-				features: geoJsonFeatures,
-			}),
-			style: (feature) => {
-				// Use baked-in colors from the feature properties
-				const fillColor = feature.get('_heatmap_fill_color');
-				const strokeColor = feature.get('_heatmap_stroke_color');
-
-				return new Style({
-					fill: new Fill({ color: fillColor }),
-					stroke: new Stroke({ color: strokeColor, width: 2 })
-				});
-			}
-		});
-
-		vectorLayer.set('className', 'geojson-features');
-		map.getLayers().insertAt(1, vectorLayer);
-	}
-
-</script>
+	</script>

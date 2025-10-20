@@ -116,10 +116,10 @@
 		const itemsColor = [
 			{'Alle': 'all'},
 			{'Schwarz': 'black'},
-			// {'Rot': 'red'},
 			{'Blau': 'blue'},
 			{'Grün': 'green'},
 			{'Gelb': 'yellow'},
+			{'Rot': 'red'},
 		];
 
 		const getFreeSources = (mapping,index) => {

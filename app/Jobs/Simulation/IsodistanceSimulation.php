@@ -108,6 +108,7 @@ class IsodistanceSimulation extends BaseJob implements ShouldBeUnique
 		// Handle Response
 		if (!$response->successful()) {
 			$this->target->status = 'failed';
+			$this->target->save();
 			Log::critical('Job failed: IsodistanceSimulation. HTTP error: ' . $response->body());
 			Log::critical("Request body: " . json_encode($payload, JSON_PRETTY_PRINT));
 			return;

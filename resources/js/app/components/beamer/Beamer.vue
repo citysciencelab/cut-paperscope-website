@@ -157,7 +157,7 @@
 		}
 
 		function toggleBeamer(value) {
-			console.log("Toggle Beamer", value);
+
 			if(isCalibrating.value) { return; }
 			mapRender.isHidden = value;
 		}

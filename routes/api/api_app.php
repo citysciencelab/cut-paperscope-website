@@ -70,6 +70,7 @@
 		// project
 		Route::get('project', [ProjectController::class,'getPublicList'])->name('api.project.list');
 		Route::post('project/save', [ProjectController::class,'save'])->name('api.project.save');
+		Route::post('project/save/settings', [ProjectController::class,'saveSettings'])->name('api.project.save.settings');
 		Route::post('project/delete', [ProjectController::class,'deleteModel'])->name('api.project.delete');
 	});
 

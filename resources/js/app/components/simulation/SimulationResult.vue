@@ -26,8 +26,8 @@
 				<template v-if="result.type == 'simulation' && result.status=='successful'">
 					<span class="textlink" v-if="isVisualizer" @click="showSimulation(result.id)">Anzeigen</span>
 					<a v-else :href="baseUrl+'simulation/image/'+result.id" target="_blank">Preview</a>
-					<br>
-					<a :href="baseUrl+'simulation/project/'+result.id" target="_blank">Download QGIS</a><br>
+					<br v-if="result.model=='umep:heat_island'">
+					<a :href="baseUrl+'simulation/project/'+result.id" v-if="result.model=='umep:heat_island'" target="_blank">Download QGIS</a><br>
 				</template>
 
 				<!-- UMP -->
@@ -56,9 +56,13 @@
 
 	<script setup>
 
-		import { computed, inject } from 'vue';
+		import { computed } from 'vue';
+		import { storeToRefs } from 'pinia';
 		import { useRoute } from 'vue-router';
+
 		import { useDate } from '@global/composables/useDate';
+		import { useVisualizerStore } from '@app/stores/VisualizerStore';
+
 		import { getLength } from 'ol/sphere';
 		import { LineString } from 'ol/geom';
 
@@ -105,8 +109,13 @@
 		// VISUALIZER
 		/////////////////////////////////
 
+		const { simulation } = storeToRefs(useVisualizerStore());
 		const isVisualizer = computed(() => route.name == 'visualizer');
-		const showSimulation = inject('showSimulation');
+
+		function showSimulation(resultId, isUmp=false) {
+
+			simulation.value = { id: resultId, isUmp: isUmp };
+		}
 
 
 		/////////////////////////////////
@@ -115,20 +124,6 @@
 
 		function deleteResult(resultId) {
 			emit('delete-result', resultId);
-		}
-
-
-		/////////////////////////////////
-		// UTILS
-		/////////////////////////////////
-
-		function getTimeTaken(start, end) {
-			if (!start || !end) return 'N/A';
-			const duration = new Date(end) - new Date(start);
-			const minutes = Math.floor((duration / (1000 * 60)) % 60);
-			const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-			const pad = n => n.toString().padStart(2, '0');
-			return `${pad(hours)}:${pad(minutes)} Std`;
 		}
 
 

@@ -24,6 +24,7 @@
 	use App\Http\Resources\ProjectSceneResource;
 	use App\Http\Resources\SimulationListResource;
 	use App\Http\Requests\App\ProjectSaveRequest;
+	use App\Http\Requests\App\ProjectSettingsSaveRequest;
 	use App\Http\Requests\App\ProjectSceneSaveRequest;
 	use App\Http\Requests\App\ProjectSimulationRequest;
 	use App\Jobs\Base\ProcessSharingUpload;
@@ -94,12 +95,12 @@ class ProjectController extends AppController {
 		$project->start_latitude	= $validated->start_latitude;
 		$project->end_longitude		= $validated->end_longitude;
 		$project->end_latitude		= $validated->end_latitude;
-		$project->visualizer_settings		= $validated->visualizer_settings;
+		$project->visualizer_settings = $validated->visualizer_settings;
 
 		// scene
 		$project->ratio				= $this->calculateRatio($project);
 		$project->mapping			= $validated->mapping;
-		$project->scene				= $validated->scene;
+		//$project->scene			= $validated->scene;
 
 		// save translatable properties
 		$lang = config('app.fallback_locale');
@@ -117,6 +118,23 @@ class ProjectController extends AppController {
 		}
 
 		return $this->getPublic($project->id);
+	}
+
+
+	public function saveSettings(ProjectSettingsSaveRequest $request): JsonResponse {
+
+		$validated = $request->validated();
+
+		// get project 
+		$project = Project::whereSlug($validated->slug)->first();
+		if(!$project) { return $this->responseError(); }
+		if($project->user_id != Auth::id()) { return $this->responseError(403); }
+
+		// save settings
+		$project->visualizer_settings = $validated->visualizer_settings;
+		$project->save();
+
+		return $this->responseSuccess();
 	}
 
 
@@ -167,7 +185,7 @@ class ProjectController extends AppController {
 					"coordinates" => []
 				],
 			];
-
+			
 			// add coordinates
 			foreach($f['points'] as $p) {
 				$x = $start[0] + ($end[0] - $start[0]) * $p['x'];

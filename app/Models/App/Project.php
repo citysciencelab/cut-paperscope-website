@@ -55,27 +55,9 @@ class Project extends BaseModel {
 
 /*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//	RELATIONS
+//	GETTER
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
-
-
-	public function fragments() {
-
-		return $this->getChildRelation('App\Models\App\Base\Fragment');
-	}
-
-
-	public function user() {
-
-		return $this->getSingleRelation('App\Models\Auth\User', 'user_id');
-	}
-
-
-	public function deleteRelations() {
-
-		$this->fragments()->delete();
-	}
 
 
 	/**
@@ -85,6 +67,7 @@ class Project extends BaseModel {
 	 * @param string|null $color Filter by color property
 	 * @return array Array of coordinates with feature UIDs
 	 */
+	
 	public function getLocationCoordinates($geometryType = null, $color = null) {
 
 		// Get the scene data
@@ -145,6 +128,7 @@ class Project extends BaseModel {
 	 * @param array $coordinates Coordinate data
 	 * @return array|null [longitude, latitude] or null if invalid
 	 */
+	
 	private function calculateCentroid($type, $coordinates) {
 
 		switch ($type) {
@@ -175,6 +159,7 @@ class Project extends BaseModel {
 	 * @param array $ring Array of [longitude, latitude] coordinates
 	 * @return array|null [longitude, latitude] or null if invalid
 	 */
+	
 	private function calculatePolygonCentroid($ring) {
 
 		// Return coords if polygon is point
@@ -220,6 +205,7 @@ class Project extends BaseModel {
 	 * @param int|null $shapeIndex
 	 * @return string|null
 	 */
+	
 	private function resolveShapeFromMapping($shapeIndex) {
 
 		if ($shapeIndex === null || !isset($this->mapping) || !is_array($this->mapping)) {
@@ -245,6 +231,7 @@ class Project extends BaseModel {
 	 * @param int|null $colorIndex
 	 * @return string|null
 	 */
+	
 	private function resolveColorFromMapping($colorIndex) {
 
 		if ($colorIndex === null) {
@@ -259,6 +246,32 @@ class Project extends BaseModel {
 		];
 
 		return $colorMap[$colorIndex] ?? null;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	RELATIONS
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+	public function fragments() {
+
+		return $this->getChildRelation('App\Models\App\Base\Fragment');
+	}
+
+
+	public function user() {
+
+		return $this->getSingleRelation('App\Models\Auth\User', 'user_id');
+	}
+
+
+	public function deleteRelations() {
+
+		$this->fragments()->delete();
 	}
 
 

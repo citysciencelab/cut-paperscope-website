@@ -92,9 +92,12 @@
 
 		function submit() {
 
+			if(!form.value.visualizer_settings) { 
+				form.value.visualizer_settings = { is_2d_view: true };
+			}	
+
 			submitForm("api.project.save", data => {
 				form.value = data;
-				//router.push({name:'home'});
 			});
 		}
 

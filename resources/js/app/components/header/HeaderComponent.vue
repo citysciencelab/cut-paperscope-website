@@ -12,6 +12,7 @@
 			<!-- LOGO -->
 			<router-link class="header-logo" :to="link('home')" :aria-label="t('Zur Startseite wechseln')">
 				<svg-item inline="app/paperscope-logo"/>
+				<p class="header-logo-title" v-if="project">{{ project.title }}</p>
 			</router-link>
 
 			<header-navi/>
@@ -31,7 +32,10 @@
 
 	<script setup>
 
+		import { storeToRefs } from 'pinia';
+
 		import { useLanguage } from '@global/composables/useLanguage';
+		import { useVisualizerStore } from '@app/stores/VisualizerStore';
 
 
 		/////////////////////////////////
@@ -39,6 +43,7 @@
 		/////////////////////////////////
 
 		const { t } = useLanguage();
+		const { project } = storeToRefs(useVisualizerStore());
 
 
 	</script>

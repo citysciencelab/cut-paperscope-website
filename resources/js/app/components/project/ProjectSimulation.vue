@@ -7,7 +7,7 @@
 
 	<template>
 
-		<simulation class="project-simulation" :project="form"/>
+		<simulation-list class="project-simulation" :project="form"/>
 
 	</template>
 

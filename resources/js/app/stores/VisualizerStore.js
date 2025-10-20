@@ -7,7 +7,8 @@
 
 	import { ref, computed } from 'vue'
 	import { defineStore } from 'pinia'
-	import { useApi } from '@global/composables/useApi'
+
+	import { useApi } from '@global/composables/useApi';
 
 
 
@@ -20,136 +21,58 @@
 
 	export const useVisualizerStore = defineStore('visualizer', () => {
 
-		const { apiGetSlug, apiPost } = useApi();
-
 
 		/////////////////////////////////
 		// DATA
 		/////////////////////////////////
 
 		const project = ref(null);
-		const simulation = ref({
-			jobId: null,
-			isUmp: false,
-			isLoaded: false
-		});
+		const simulation = ref();
 
 
 		/////////////////////////////////
-		// ACTIONS
+		// VISUALIZER MODE
 		/////////////////////////////////
+		
+		const is2dActive = ref(true); // use as fallback if no project is loaded
+		const is2dView = computed(() => project.value ? project.value.visualizer_settings?.is_2d_view : is2dActive.value);
 
-		async function loadProject(slug) {
-			if (!slug) return;
+		function toggleViewMode() {
 
-			await apiGetSlug('project', (data) => {
-				project.value = data;
-			}).catch(err => console.error('Failed to load project:', err));
-		}
+			is2dActive.value = !is2dActive.value;
 
-		async function updateProject() {
-			if (!project.value) return;
-
-			await apiGetSlug('project', (data) => {
-				project.value = data;
-			}).catch(err => console.error('Failed to update project:', err));
-		}
-
-
-		////////////////////////////////////
-		// SETTERS
-		////////////////////////////////////
-
-		function setProject(data) {
-			project.value = data;
-		}
-
-		function setViewMode(mode) {
-			if (project.value) {
-				// Create visualizer_settings if it doesn't exist
-				project.value.visualizer_settings ||= {};
-				project.value.visualizer_settings.is_2d_view = mode;
-
-				// Save the changes to the server
-				apiPost("api.project.save", project.value).catch(err => {
-					console.error('Failed to save view mode:', err);
-				});
+			if(project.value) {
+				if(!project.value.visualizer_settings) { project.value.visualizer_settings = {}; }
+				project.value.visualizer_settings.is_2d_view = is2dActive.value;
+				saveSettings(project.value.visualizer_settings);
 			}
 		}
 
-		function clearProject() {
-			project.value = null;
-			simulation.value = {
-				jobId: null,
-				isUmp: false,
-				isLoaded: false
-			};
+
+		/////////////////////////////////
+		// HELPER
+		/////////////////////////////////
+
+		const { apiPost } = useApi();
+
+		function saveSettings(settings) {
+		
+			if(!project.value) { return; }
+			
+			apiPost('project.save.settings', { slug: project.value.slug, visualizer_settings: settings });
 		}
 
-		function setSimulation(jobId, isUmp = false) {
-			simulation.value = {
-				jobId,
-				isUmp,
-				isLoaded: !!jobId
-			};
-		}
+		// use helper to trigger focus method via watch
+		const resetFocus = ref(0);
 
 
 		/////////////////////////////////
-		// GETTERS
-		/////////////////////////////////
-
-		const hasProject = computed(() => project.value !== null);
-		const projectSlug = computed(() => project.value?.slug || null);
-		const projectTitle = computed(() => project.value?.title || '');
-		const mapping = computed(() => project.value?.mapping || null);
-		const scene = computed(() => project.value?.scene || null);
-		const is2dView = computed(() => project.value?.visualizer_settings?.is_2d_view ?? true);
-		const currentSimulation = computed(() => simulation.value);
-		const hasSimulation = computed(() => simulation.value.isLoaded);
-
-
-		/////////////////////////////////
-		// UTILITY FUNCTIONS
-		/////////////////////////////////
-
-		function cleanup() {
-			// Reset all states
-			project.value = null;
-			simulation.value = {
-				jobId: null,
-				isUmp: false,
-				isLoaded: false
-			};
-		}
-
-
-		/////////////////////////////////
-		// RETURN STORE INTERFACE
+		// EXPORT
 		/////////////////////////////////
 
 		return {
-			// State
-			project,
-			simulation,
-
-			// Getters
-			hasProject,
-			projectSlug,
-			projectTitle,
-			mapping,
-			scene,
-			is2dView,
-			currentSimulation,
-			hasSimulation,
-
-			// Actions
-			loadProject,
-			updateProject,
-			setProject,
-			setViewMode,
-			clearProject,
-			setSimulation,
-			cleanup,
+			project, simulation,
+			is2dView, is2dActive, toggleViewMode,
+			resetFocus
 		};
 	});

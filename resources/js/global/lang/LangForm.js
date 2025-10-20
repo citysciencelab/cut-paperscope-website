@@ -75,6 +75,7 @@
 		"Quadrat - Grün": "Rectangle - Green",
 		"Quadrat - Blau": "Rectangle - Blue",
 		"Quadrat - Gelb": "Rectangle - Yellow",
+		"Quadrat - Rot": "Rectangle - Red",
 
 		"Dreieck": "Triangle",
 		"Dreieck - Schwarz": "Triangle - Black",
@@ -82,6 +83,7 @@
 		"Dreieck - Grün": "Triangle - Green",
 		"Dreieck - Blau": "Triangle - Blue",
 		"Dreieck - Gelb": "Triangle - Yellow",
+		"Dreieck - Rot": "Triangle - Red",
 
 		"Kreis": "Circle",
 		"Kreis - Schwarz": "Circle - Black",
@@ -89,6 +91,7 @@
 		"Kreis - Grün": "Circle - Green",
 		"Kreis - Blau": "Circle - Blue",
 		"Kreis - Gelb": "Circle - Yellow",
+		"Kreis - Rot": "Circle - Red",
 
 		"Organisch": "Organic",
 		"Organisch - Schwarz": "Organic - Black",
@@ -96,6 +99,7 @@
 		"Organisch - Grün": "Organic - Green",
 		"Organisch - Blau": "Organic - Blue",
 		"Organisch - Gelb": "Organic - Yellow",
+		"Organisch - Rot": "Organic - Red",
 
 		"Kreuz": "Cross",
 		"Kreuz - Schwarz": "Cross - Black",
@@ -103,6 +107,7 @@
 		"Kreuz - Grün": "Cross - Green",
 		"Kreuz - Blau": "Cross - Blue",
 		"Kreuz - Gelb": "Cross - Yellow",
+		"Kreuz - Rot": "Cross - Red",
 
 		"Form 2D": "Shape 2D",
 		"Gebäude": "Building",

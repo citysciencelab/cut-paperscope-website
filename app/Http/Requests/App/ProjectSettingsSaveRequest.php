@@ -20,11 +20,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// */
 
 
-class SimulationExecuteRequest extends BaseModelSaveRequest {
+class ProjectSettingsSaveRequest extends BaseModelSaveRequest {
 
 
-	protected $target = "simulations";
-	protected $targetClass = \App\Models\App\Simulation::class;
+	protected $target = "projects";
+	protected $targetClass = \App\Models\App\Project::class;
 
 
 	public function authorize(): bool {
@@ -43,14 +43,10 @@ class SimulationExecuteRequest extends BaseModelSaveRequest {
 
 	public function rules(): array {
 
-		return $this->translate([
-
-			'job_name' =>	'bail|nullable|string|max:255',
-
-			// simulation properties
-			'inputs.resolution' =>	'bail|required|integer|between:1,100',
-			'inputs.project_id' =>	'bail|required|uuid|exists:projects,id',
-		]);
+		return [
+			'slug' => 'bail|required|string|max:9',
+			'visualizer_settings' => 'bail|required|array',
+		];
 	}
 
 

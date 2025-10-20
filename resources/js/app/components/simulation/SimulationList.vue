@@ -11,18 +11,21 @@
 
 			<div class="cols">
 
+				<!-- PAPERSCOPE SIMULATIONS -->
 				<h3>PaperScope</h3>
 				<simulation-process class="col-50" v-for="process in psSimulations" :key="process.id" :process="process" :project="project"/>
 
+
+				<!-- URBAN MODEL PLATFORM -->
 				<h3>Urban Model Platform</h3>
 
-				<!-- LOGIN -->
+				<!-- UMP LOGIN -->
 				<div v-if="!umpBearerToken">
 					<p>{{ t("login.copy") }}</p>
 					<btn label="Login" class="small" @click="loginUmp"/>
 				</div>
 
-				<!-- MODELS -->
+				<!-- UMP SIMULATIONS -->
 				<div v-else-if="isLoading" class="col-100" style="height:100px"><loading-spinner/></div>
 				<simulation-process v-else class="col-50" v-for="process in umpSimulations" :key="process.id" :process="process" :project="project"/>
 
@@ -49,7 +52,6 @@
 		import { ref } from 'vue';
 		import { storeToRefs } from 'pinia'
 
-		import { useConfig } from '@global/composables/useConfig';
 		import { useApi } from '@global/composables/useApi';
 		import { useLanguage } from '@global/composables/useLanguage';
 		import { useUmp } from '@resources/js/app/composables/useUmp';
@@ -60,7 +62,6 @@
 		// INIT
 		/////////////////////////////////
 
-		const { baseUrl } = useConfig();
 		const { apiGetResponse } = useApi();
 		const { t } = useLanguage();
 		const { umpAuthUrl, getProcesses } = useUmp();

@@ -9,7 +9,7 @@
 
 		<div class="visualizer-navi">
 			<p class="visualizer-navi-title">
-				<btn class="small" icon="btn-reset" :label="t('Ansicht zurücksetzen')" @click="emit('resetView')"/>
+				<btn class="small" icon="btn-reset" :label="t('Ansicht zurücksetzen')" @click="resetFocus++"/>
 			</p>
 			<div class="visualizer-navi-buttons">
 				<btn :icon="socketConnected ? 'btn-connected' : 'btn-disconnected'" :class="['small secondary socket',{'disconnected': !socketConnected}]" @click="toggleWebsocket"/>
@@ -22,8 +22,8 @@
 
 		<popup ref="simulationPopup" class="popup-simulation">
 
-			<p v-if="simulationResult" class="textlink" style="margin-bottom:30px" @click="showSimulation(null)">Aktuelle Simulation ausblenden</p>
-			<simulation :project="visualizerStore.project"/>
+			<p v-if="simulation" class="textlink" style="margin-bottom:30px" @click="hideSimulation">Aktuelle Simulation ausblenden</p>
+			<simulation-list :project/>
 
 		</popup>
 
@@ -40,9 +40,10 @@
 
 	<script setup>
 
-		import { ref, useTemplateRef, provide, computed } from 'vue';
+		import { ref, useTemplateRef, computed, watch } from 'vue';
+		import { storeToRefs } from '@node_modules/pinia/dist/pinia';
+
 		import { useBroadcast } from '@global/composables/useBroadcast';
-		import { useConfig } from '@global/composables/useConfig';
 		import { useLanguage } from '@global/composables/useLanguage';
 		import { useVisualizerStore } from '@app/stores/VisualizerStore';
 
@@ -51,22 +52,21 @@
 		// INIT
 		/////////////////////////////////
 
-		const emit = defineEmits(['resetView', 'showSimulation']);
+		const { t } = useLanguage();
 
 		const visualizerStore = useVisualizerStore();
-		const { baseUrl } = useConfig();
-		const { t } = useLanguage();
+		const { project, is2dView, simulation, resetFocus } = storeToRefs(visualizerStore);
 
 
 		/////////////////////////////////
 		// 2D / 3D
 		/////////////////////////////////
 
-		const toggleLabel = computed(() => visualizerStore.is2dView ? "3D" : "2D");
+		const toggleLabel = computed(() => is2dView.value ? "3D" : "2D");
 
 		async function toggleMode() {
-			const newMode = !visualizerStore.is2dView;
-			visualizerStore.setViewMode(newMode);
+
+			visualizerStore.toggleViewMode();
 		}
 
 
@@ -76,26 +76,28 @@
 
 		const simulationPopup = useTemplateRef('simulationPopup');
 
-		async function openSimulation() {
+		function openSimulation() {
 
 			simulationPopup.value.open();
 		}
 
 
-		/////////////////////////////////
-		// SIMULATION RESULTS
-		/////////////////////////////////
-
-		const simulationResult = ref(null);
-
-		function showSimulation(jobId,isUmp = false) {
-
-			emit('showSimulation', jobId, isUmp);
+		function closeSimulation() {
 
 			simulationPopup.value.close();
 		}
 
-		provide('showSimulation', showSimulation);
+
+		function hideSimulation() {
+
+			simulation.value = null;
+			closeSimulation();
+		}
+
+		watch(simulation, () => {
+
+			if(simulation.value) closeSimulation();
+		});
 
 
 		/////////////////////////////////

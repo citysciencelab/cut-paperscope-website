@@ -7,10 +7,9 @@
 
 	<template>
 
-		<Visualizer2d ref="visualizer2d" v-if="visualizerStore.is2dView"/>
-		<Visualizer3d ref="visualizer3d" v-else/>
-
-		<VisualizerNavi ref="navi" @resetView="resetView" @showSimulation="showSimulation"/>
+		<visualizer-2d v-if="project && is2dView"/>
+		<visualizer-3d v-else="project"/>
+		<visualizer-navi/>
 
 	</template>
 
@@ -25,127 +24,113 @@
 
 	<script setup>
 
-		import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+		import { ref, onMounted, onUnmounted, watch } from 'vue';
+		import { storeToRefs } from 'pinia';
 		import { useRoute } from 'vue-router';
-		import { useVisualizerStore } from '@app/stores/VisualizerStore';
+		
+		import { useApi } from '@global/composables/useApi';
 		import { useBroadcast } from '@global/composables/useBroadcast';
+		import { useVisualizerStore } from '@app/stores/VisualizerStore';
+
 
 		/////////////////////////////////
 		// INIT
 		/////////////////////////////////
 
 		const route = useRoute();
-		const visualizerStore = useVisualizerStore();
+		const { apiGetSlug } = useApi();
 		const { socketConnected, subscribePrivateChannel } = useBroadcast();
 
-		const navi = ref(null);
-		const visualizer2d = ref(null);
-		const visualizer3d = ref(null);
-
 
 		/////////////////////////////////
-		// PROJECT MANAGEMENT
+		// PROJECT
 		/////////////////////////////////
+
+		const visualizerStore = useVisualizerStore();
+		const { project, is2dView, is2dActive } = storeToRefs(visualizerStore);
+
+		const isLoading = ref(false);
+
 
 		async function loadProject() {
 
-			if (!route.params.slug) return;
-
-			await visualizerStore.loadProject(route.params.slug);
-
-			if (!visualizerStore.project) return;
-
-			// Initialize broadcast after project is loaded
-			initBroadcast();
-			updateHeaderLogo(visualizerStore.project.title);
+			if(!route.params.slug || isLoading.value) { return; }
+			isLoading.value = true;
+			
+			await apiGetSlug('project', data => {
+				
+				project.value = data;
+				is2dActive.value = project.value.visualizer_settings?.is_2d_view;
+				
+				initBroadcast();
+			})
+			.finally(() => isLoading.value = false);
 		}
 
-		onMounted(loadProject);
+
+		async function updateScene() {
+
+			if(!project.value || isLoading.value) { return; }
+			isLoading.value = true;
+
+			await apiGetSlug('project.scene', data => {
+				project.value = { ...project.value, ...data };
+			})
+			.finally(() => isLoading.value = false);
+		}
+
+
+		loadProject();
+
 		onUnmounted(() => {
-			cleanup();
-			visualizerStore.cleanup();
-			u('.header-logo-title').remove();
+			
+			project.value = null;
+			clearPolling();
 		});
 
 
 		/////////////////////////////////
-		// BROADCAST HANDLING
+		// BROADCAST
 		/////////////////////////////////
-
-		let pollingInterval = 0;
 
 		function initBroadcast() {
 
-			if (!visualizerStore.project) return;
-
-			subscribePrivateChannel('project.' + visualizerStore.project.slug, onChannelMessage);
-			initPollingFallback();
+			subscribePrivateChannel('project.' + project.value.slug, onChannelMessage);
 		}
+
 
 		function onChannelMessage(event, data) {
 
-			if (event === 'ProjectSceneUpdated') {
-				visualizerStore.updateProject();
+			if(event == 'ProjectSceneUpdated') { updateScene(); }
+		}
+
+
+		/////////////////////////////////
+		// POLLING
+		/////////////////////////////////
+		
+		// interval polling as a fallback if websocket is not available
+		var pollingInterval = 0;
+		
+
+		watch(socketConnected, (connected) => {
+			
+			clearPolling();
+
+			if(!connected && project.value) {
+				pollingInterval = setInterval(updateScene, 3000);
 			}
-		}
+		});
 
-		function initPollingFallback() {
 
-			// Setup polling as fallback when websocket is not available
-			watch(socketConnected, (connected) => {
-				clearInterval(pollingInterval);
-
-				if (!connected && visualizerStore.project) {
-					console.log('No socket connection, starting polling fallback');
-					pollingInterval = setInterval(() => {
-						visualizerStore.updateProject();
-					}, 3000);
-				}
-			});
-		}
-
-		function cleanup() {
+		function clearPolling() {
 
 			clearInterval(pollingInterval);
 			pollingInterval = 0;
 		}
 
 
-		/////////////////////////////////
-		// VIEW CONTROL ACTIONS
-		/////////////////////////////////
 
-		const currentVisualizer = computed(() => visualizerStore.is2dView ? visualizer2d.value : visualizer3d.value);
-
-		function resetView() {
-			currentVisualizer.value.focus();
-		}
-
-		function showSimulation(jobId, isUmp = false) {
-			currentVisualizer.value.showSimulation(jobId, isUmp);
-		}
-
-
-		/////////////////////////////////
-		// UTILITY FUNCTIONS
-		/////////////////////////////////
-
-		function updateHeaderLogo(title) {
-
-			// Update DOM directly for header logo
-			const logoElement = document.querySelector('.header-logo');
-			if (logoElement) {
-				const existingTitle = logoElement.querySelector('.header-logo-title');
-				if (existingTitle) {
-					existingTitle.textContent = title;
-				} else {
-					const titleElement = document.createElement('p');
-					titleElement.className = 'header-logo-title';
-					titleElement.textContent = title;
-					logoElement.appendChild(titleElement);
-				}
-			}
-		}
 
 
 	</script>

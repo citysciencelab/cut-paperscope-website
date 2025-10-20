@@ -25,6 +25,8 @@ php artisan test --filter=BackendControllerTest --config=./tests/PHPUnit/phpunit
 
 mklink /D "C:\xampp\htdocs\hcu\paperscope-website\public\storage" "C:\xampp\htdocs\hcu\paperscope-website\storage\app\public"
 
+docker run -d --name paperscope-simulation -v /Applications/MAMP/htdocs/hcu/paperscope-website/storage/app/public/simulations:/app/storage paperscope-simulation:latest tail -f /dev/null
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
