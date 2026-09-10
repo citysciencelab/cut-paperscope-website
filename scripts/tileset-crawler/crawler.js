@@ -25,7 +25,7 @@
 	
 	var __dirname = path.resolve();
 	
-	const basePath = "https://daten-hamburg.de/gdi3d/datasource-data/LoD3_tex20cm_Area1/";
+	const basePath = "https://www.daten-hamburg.de/gdi3d/datasource-data/LoD3_tex20cm_Area1/";
 	const rootUrl = basePath + "tileset.json";
 	const outputPath = __dirname + "/tileset-area1/";
 
