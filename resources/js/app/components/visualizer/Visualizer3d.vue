@@ -196,7 +196,7 @@
 
 		async function useTerrain() {
 
-			const url = "https://daten-hamburg.de/gdi3d/datasource-data/Gelaende";
+			const url = "https://www.daten-hamburg.de/gdi3d/datasource-data/Gelaende";
 			const terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(url);
 			const terrain = new Cesium.Terrain(terrainProvider);
 
